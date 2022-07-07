@@ -17,6 +17,14 @@ impl Utils {
         format!("Exception raised in {}: {}.", r#where, message).to_string()
     }
 
+    /// Panics and displays an error message
+    /// 
+    /// ## Arguments:
+    /// * message - the message to display
+    pub fn error(message: &str) {
+        panic!("{}", message)
+    }
+
     /// Returns the value of the environment at key.
     /// 
     /// ## Arguments:
