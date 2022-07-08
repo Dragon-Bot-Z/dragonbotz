@@ -47,16 +47,10 @@ async fn main() {
         Err(error) => panic!("{}", error),
     };
 
-    let id_application: u64 = match Utils::environment_value_at("DRAGONBOTZ_APP_ID") {
-        Ok(id_application) => id_application,
-        Err(error) => panic!("{}", error),
-    };
-
     // create the client
-    let bot = Bot::new(commands_map, id_test_guild, id_application);
+    let bot = Bot::new(commands_map, id_test_guild);
     let mut client = match Client::builder(token, GatewayIntents::default())
         .event_handler(bot)
-        .application_id(id_application)
         .await {
 
         Ok(client) => client,

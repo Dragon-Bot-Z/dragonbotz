@@ -3,7 +3,7 @@
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
-use serenity::model::interactions::Interaction;
+use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 
 // crate
 use crate::core::command::Command;
@@ -27,8 +27,18 @@ impl Command for TestCommand {
         "A simple test command".to_string()
     }
 
-    async fn run(&self, _: &Context, _: &Interaction) -> Result<(), String> { 
-        Ok(()) 
+    async fn run(&self, 
+                 context: &Context, 
+                 command: &ApplicationCommandInteraction) 
+        -> Result<(), String> { 
+
+        let channel = command.channel_id;
+
+        if let Err(error) = channel.send_message(&context.http, |message| message.content("Hey!")).await {
+            return Err(format!("{}", error));
+        }
+
+        Ok(())
     }
     
 }
