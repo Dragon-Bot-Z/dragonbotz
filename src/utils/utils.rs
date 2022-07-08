@@ -40,7 +40,7 @@ impl Utils {
                     Ok(converted) => Ok(converted),
                     Err(_) => Err(
                         Utils::exception_message(
-                            "environment_value_at", 
+                            "Utils::environment_value_at", 
                             format!("Unable to parse \"{}\" to the requested type.", key).as_str()
                         )
                     ),
@@ -50,14 +50,14 @@ impl Utils {
             
             Err(env::VarError::NotPresent) => Err(
                 Utils::exception_message(
-                    "environment_value_at",
+                    "Utils::environment_value_at",
                     format!("\"{}\" not found", key).as_str()
                 )
             ),
 
             Err(_) => Err(
                 Utils::exception_message(
-                    "environment_value_at",
+                    "Utils::environment_value_at",
                     format!("\"{}\" contains invalid characters", key).as_str()
                 )
             )
