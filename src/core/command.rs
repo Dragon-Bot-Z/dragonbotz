@@ -12,17 +12,18 @@ pub trait Command: Send + Sync {
     /// Returns the command's name
     fn name(self: &Self) -> String;
 
-    /// Returns the command's description
-    fn description(self: &Self) -> String;
-
     /// Returns the command's short name
     fn short_name(self: &Self) -> String;
+
+    /// Returns the command's description
+    fn description(self: &Self) -> String;
 
     /// Executes the command's process
     /// 
     /// ## Arguments:
     /// * context - the command's context
     /// * interaction - the interaction that had triggered the command
-    async fn run(self: &Self, _context: &Context, _interaction: &Interaction);
+    async fn run(self: &Self, _context: &Context, _interaction: &Interaction)
+        -> Result<(), String>;
 
 }

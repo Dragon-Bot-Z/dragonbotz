@@ -45,7 +45,7 @@ impl Bot {
         }
 
     }
-
+    
 }
 
 
@@ -64,12 +64,13 @@ impl BotUtils for Bot {
         // fetch the test guild
         let test_guild = GuildId(self.id_test_guild);
 
-        // add the commands to the test guild
+        // add commands to the test guild
         if let Err(error) = test_guild.set_application_commands(
             &context.http,
             |application_commands| {
 
                 for (name, command) in &self.commands {
+
                     application_commands.create_application_command(
                         |new_command| {
 

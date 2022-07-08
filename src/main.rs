@@ -8,6 +8,7 @@ use serenity::client::Client;
 use serenity::model::gateway::GatewayIntents;
 
 // mods
+mod commands;
 mod core;
 mod utils;
 
@@ -17,12 +18,17 @@ use crate::core::command::Command;
 
 use crate::utils::utils::Utils;
 
+// commands
+use crate::commands::test::TestCommand;
+
 
 
 #[tokio::main]
 async fn main() {
 
-    let commands: [Box<dyn Command>; 0] = [];
+    let commands: [Box<dyn Command>; 1] = [
+        Box::new(TestCommand),
+    ];
     let mut commands_map = HashMap::<String, Box<dyn Command>>::new();
 
     // add commands to the commands map
@@ -50,6 +56,7 @@ async fn main() {
     let bot = Bot::new(commands_map, id_test_guild, id_application);
     let mut client = match Client::builder(token, GatewayIntents::default())
         .event_handler(bot)
+        .application_id(id_application)
         .await {
 
         Ok(client) => client,
