@@ -3,33 +3,19 @@
     // std
 use std::env;
 
+// crate
+use crate::utils::error::Error;
+
 
 pub struct Utils;
 
 impl Utils {
 
-    /// Returns a formatted error message.
-    /// 
-    /// ## Arguments:
-    /// * where - where the exception had been triggered
-    /// * message - the exception's message
-    pub fn exception_message(r#where: &str, message: &str) -> String {
-        format!("Exception raised in {}: {}.", r#where, message).to_string()
-    }
-
-    /// Panics and displays an error message
-    /// 
-    /// ## Arguments:
-    /// * message - the message to display
-    pub fn error(message: &str) {
-        panic!("{}", message)
-    }
-
     /// Returns the value of the environment at key.
     /// 
     /// ## Arguments:
     /// * key - the environment key
-    pub fn environment_value_at<T>(key: &str) -> Result<T, String>
+    pub fn environment_value_at<T>(key: &str) -> Result<T, Error>
         where T: std::str::FromStr {
         
         match env::var(key) {
@@ -39,31 +25,26 @@ impl Utils {
                 match value.parse::<T>() {
                     Ok(converted) => Ok(converted),
                     Err(_) => Err(
-                        Utils::exception_message(
-                            "Utils::environment_value_at", 
-                            format!("Unable to parse \"{}\" to the requested type.", key).as_str()
+                        Error::EnvironmentVariableParseError(
+                            format!("Unable to convert \"{}\" to requested type.", key)
                         )
-                    ),
+                    )
                 }
 
             } 
             
             Err(env::VarError::NotPresent) => Err(
-                Utils::exception_message(
-                    "Utils::environment_value_at",
-                    format!("\"{}\" not found", key).as_str()
+                Error::EnvironmentVariableNotFound(
+                    format!("Environment variable \"{}\" not found.", key)
                 )
             ),
 
             Err(_) => Err(
-                Utils::exception_message(
-                    "Utils::environment_value_at",
-                    format!("\"{}\" contains invalid characters", key).as_str()
+                Error::EnvironmentVariableContainesInvalidCharacters(
+                    format!("Environment variable \"{}\" contains invalid characters.", key)
                 )
-            )
-
+            ),
         }
-        
     }
 
 }

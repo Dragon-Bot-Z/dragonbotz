@@ -14,3 +14,10 @@ features = ["client", "gateway", "rustls_backend", "model"]
 [dependencies.tokio]
 version = "1.19.2"
 features = ["macros", "rt-multi-thread"]
+
+[dependencies.tokio-postgres]
+version = "0.7.6"
+features = ["with-chrono-0_4"]
+
+[dependencies.chrono]
+version = "0.4"
