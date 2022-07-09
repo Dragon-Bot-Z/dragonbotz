@@ -2,6 +2,10 @@
 // lib
     // serenity
 use serenity::async_trait;
+
+    // tokio
+use tokio;
+
     // tokio-postgres
 use tokio_postgres::Config;
 use tokio_postgres::NoTls;
@@ -14,26 +18,38 @@ use crate::utils::error::Error;
 pub struct Database;
 
 #[async_trait]
-trait DatabaseTrait {
+pub trait DatabaseTrait {
 
-    /// Establishes the connection to the database
+    /// Establishes the connection to the database and returns the 
+    /// tokio-postgres client
     /// 
     /// ## Arguments:
     /// * config - the database configuration
-    async fn connect(self: &Self, config: &Config) -> Result<(), Error> {
-        if let Err(error) = config.connect(NoTls).await {
-            return Err(
+    async fn connect(config: &Config) 
+        -> Result<tokio_postgres::Client, Error> {
+
+        let (client, connection) = match config.connect(NoTls).await {
+            Ok((client, connection)) => (client, connection),
+            Err(error) => return Err(
                 Error::DatabaseConnectionFailed(
                     format!("Failed to connect database: {}", error)
                 )
-            );
-        }
+            )
+        };
 
-        Ok(())
+        // perform the connection to the database
+        tokio::spawn(async move {
+            if let Err(error) = connection.await {
+                println!("{}", error)
+            }
+        });
+
+        Ok(client)
     }
 
 }
 
+#[async_trait]
 impl DatabaseTrait for Database {}
 
 impl Database {

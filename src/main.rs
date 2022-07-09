@@ -16,6 +16,7 @@ mod utils;
 use crate::core::bot::Bot;
 use crate::core::command::Command;
 use crate::core::database::Database;
+use crate::core::database::DatabaseTrait;
 
 use crate::utils::utils::Utils;
 
@@ -50,9 +51,14 @@ async fn main() {
 
     // creates a database instance
     let database_config = Database::default_config();
+    let database_client = match Database::connect(&database_config).await {
+        Ok(client) => client,
+        Err(error) => panic!("{}", error),
+    };
+    println!("Database up and running!");
 
     // create the client
-    let bot = Bot::new(commands_map, id_test_guild);
+    let bot = Bot::new(commands_map, id_test_guild, database_client);
     let mut client = match Client::builder(token, GatewayIntents::default())
         .event_handler(bot)
         .await {
