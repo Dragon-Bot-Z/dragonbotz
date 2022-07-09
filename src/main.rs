@@ -15,6 +15,7 @@ mod utils;
 // crate
 use crate::core::bot::Bot;
 use crate::core::command::Command;
+use crate::core::database::Database;
 
 use crate::utils::utils::Utils;
 
@@ -47,6 +48,9 @@ async fn main() {
         Err(error) => panic!("{}", error),
     };
 
+    // creates a database instance
+    let database_config = Database::default_config();
+
     // create the client
     let bot = Bot::new(commands_map, id_test_guild);
     let mut client = match Client::builder(token, GatewayIntents::default())
@@ -54,24 +58,13 @@ async fn main() {
         .await {
 
         Ok(client) => client,
-        Err(error) => panic!(
-            "{}",
-            Utils::exception_message(
-                "main", 
-                format!("Error creating client: {}", error).as_str()
-            )
-        )
+        Err(error) => panic!("{}", error),
 
     };
 
     // start the client
     if let Err(error) = client.start_autosharded().await {
-        Utils::error(
-            Utils::exception_message(
-                "main", 
-                format!("Error starting client: {}", error).as_str()
-            ).as_str()
-        )
+        panic!("{}", error)
     }
 
 }

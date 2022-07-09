@@ -17,6 +17,7 @@ use serenity::prelude::EventHandler;
 // crate
 use crate::core::command::Command;
 use crate::utils::utils::Utils;
+use crate::utils::error::Error;
 
 
 pub struct Bot {
@@ -49,7 +50,7 @@ impl Bot {
 
 
 #[async_trait]
-trait BotUtils {
+trait BotTrait {
 
     /// Adds slash commands to the test guild
     async fn add_slash_commands_to_test_guild(self: &Self, context: &Context);
@@ -69,7 +70,7 @@ trait BotUtils {
 }
 
 #[async_trait]
-impl BotUtils for Bot {
+impl BotTrait for Bot {
 
     async fn add_slash_commands_to_test_guild(&self, context: &Context) {
         // fetch the test guild
@@ -100,12 +101,7 @@ impl BotUtils for Bot {
             }
 
         ).await {
-            println!("{}",
-                Utils::exception_message(
-                    "Bot::add_slash_commands_to_test_guild", 
-                    format!("Unable to create slash command for test guild: {}", error).as_str()
-                )
-            )
+            println!("{}", error)
         }
     }
 
@@ -124,13 +120,7 @@ impl BotUtils for Bot {
                 response.interaction_response_data(|message| message.content("⌛ Processing your request ..."))
             }   
         ).await {
-            println!(
-                "{}",
-                Utils::exception_message(
-                    "Bot::execute_slash_command", 
-                    format!("{}", error).as_str()
-                )
-            )
+            println!("{}", error)
         };
 
         // get the command to run
@@ -151,13 +141,7 @@ impl BotUtils for Bot {
                     &context.http,
                     |message_| message_.content(format!("❌ Error while processing your request: {}", failed_error))
                 ).await {
-                    println!(
-                        "{}",
-                        Utils::exception_message(
-                            "Bot::execute_slash_command", 
-                            format!("Unable to edit original interaction response: {}", error).as_str()
-                        )
-                    )
+                    println!("{}", error)
                 }
 
                 return;
@@ -165,13 +149,7 @@ impl BotUtils for Bot {
 
             // try to delete the original message
             if let Err(error) = message.delete(&context.http).await {
-                println!(
-                    "{}",
-                    Utils::exception_message(
-                        "Bot::execute_slash_command", 
-                        format!("Unable to delete original interaction response: {}", error).as_str()
-                    )
-                )
+                println!("{}", error)
             }
         }
     }
@@ -192,13 +170,7 @@ impl BotUtils for Bot {
                     )
                 }
             ).await {
-                println!(
-                    "{}",
-                    Utils::exception_message(
-                        "Bot::check_if_slash_command_exists", 
-                        format!("{}", error).as_str()
-                    )
-                )
+                println!("{}", error)
             }
 
             return Err(());
