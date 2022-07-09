@@ -7,6 +7,9 @@ use std::collections::HashMap;
 use serenity::async_trait;
 use serenity::client::Context;
 
+    // tokio-postgres
+use tokio_postgres;
+
 use serenity::model::gateway::Ready;
 use serenity::model::interactions::Interaction;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
@@ -16,14 +19,13 @@ use serenity::prelude::EventHandler;
 
 // crate
 use crate::core::command::Command;
-use crate::utils::utils::Utils;
-use crate::utils::error::Error;
 
 
 pub struct Bot {
 
     commands: HashMap<String, Box<dyn Command>>,
     id_test_guild: u64,
+    database: tokio_postgres::Client,
 
 }
 
@@ -34,14 +36,16 @@ impl Bot {
     /// ## Arguments:
     /// * commands - the commands map
     /// * id_test_guild - the test guild id
-    /// * id_application - the application id
+    /// * database - the database client
     pub fn new(commands: HashMap<String, Box<dyn Command>>,
-               id_test_guild: u64) 
+               id_test_guild: u64,
+               database: tokio_postgres::Client) 
         -> Self {
 
         Self {
             commands,
             id_test_guild,
+            database,
         }
 
     }
