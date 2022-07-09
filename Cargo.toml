@@ -17,3 +17,7 @@ features = ["macros", "rt-multi-thread"]
 
 [dependencies.tokio-postgres]
 version = "0.7.6"
+features = ["with-chrono-0_4"]
+
+[dependencies.chrono]
+version = "0.4"
