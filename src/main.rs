@@ -28,7 +28,7 @@ use crate::commands::test::TestCommand;
 #[tokio::main]
 async fn main() {
 
-    let commands: [Box<dyn Command>; 1] = [
+    let commands: [Box<dyn Command>] = [
         Box::new(TestCommand),
     ];
     let mut commands_map = HashMap::<String, Box<dyn Command>>::new();
