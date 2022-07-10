@@ -40,7 +40,7 @@ impl Utils {
             ),
 
             Err(_) => Err(
-                Error::EnvironmentVariableContainesInvalidCharacters(
+                Error::EnvironmentVariableContainsInvalidCharacters(
                     format!("Environment variable \"{}\" contains invalid characters.", key)
                 )
             ),
