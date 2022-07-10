@@ -5,7 +5,7 @@ use chrono;
 
 
 pub struct PlayerModel {
-    discord_id: u64,
+    discord_id: i64,
     register_date: chrono::NaiveDate,
 }
 
@@ -16,7 +16,7 @@ impl PlayerModel {
     /// ## Arguments:
     /// * discord_id - the player's discord id
     /// * register_date - the player's register date
-    pub fn new(discord_id: u64, register_date: chrono::NaiveDate) -> Self {
+    pub fn new(discord_id: i64, register_date: chrono::NaiveDate) -> Self {
         Self {
             discord_id,
             register_date,
@@ -24,7 +24,7 @@ impl PlayerModel {
     }
 
     /// Returns the player's discord id
-    pub fn discord_id(&self) -> &u64 {
+    pub fn discord_id(&self) -> &i64 {
         &self.discord_id
     }
 

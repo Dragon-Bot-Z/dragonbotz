@@ -10,6 +10,7 @@ use serenity::model::gateway::GatewayIntents;
 // mods
 mod commands;
 mod core;
+mod data;
 mod utils;
 
 // crate
@@ -17,6 +18,12 @@ use crate::core::bot::Bot;
 use crate::core::command::Command;
 use crate::core::database::Database;
 use crate::core::database::DatabaseTrait;
+
+// test
+use crate::data::repository::player_repository::{
+    PlayerRepository,
+    PlayerRepositoryTrait,
+};
 
 use crate::utils::utils::Utils;
 
@@ -28,7 +35,7 @@ use crate::commands::test::TestCommand;
 #[tokio::main]
 async fn main() {
 
-    let commands: [Box<dyn Command>] = [
+    let commands: [Box<dyn Command>; 1] = [
         Box::new(TestCommand),
     ];
     let mut commands_map = HashMap::<String, Box<dyn Command>>::new();
