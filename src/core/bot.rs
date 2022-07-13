@@ -133,7 +133,7 @@ impl BotTrait for Bot {
         let command_to_run = &self.commands[&command.data.name];
         if let Err(error) = command_to_run.run(&context, &command).await {
             failed = true;
-            failed_error = error;
+            failed_error = error.to_string();
         };
 
         // get the original interaction response to delete it
