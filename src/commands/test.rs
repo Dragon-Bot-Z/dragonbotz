@@ -1,5 +1,8 @@
 
 // lib
+    // tokio-postgres
+use tokio_postgres::Client;
+
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
@@ -30,7 +33,8 @@ impl Command for TestCommand {
 
     async fn run(&self, 
                  context: &Context, 
-                 command: &ApplicationCommandInteraction) 
+                 command: &ApplicationCommandInteraction,
+                 _: &tokio_postgres::Client) 
         -> Result<(), Error> { 
 
         let channel = command.channel_id;

@@ -1,5 +1,8 @@
 
 // lib
+    // tokio-postgres
+use tokio_postgres::Client;
+
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
@@ -28,7 +31,8 @@ pub trait Command: Send + Sync {
     /// * interaction - the interaction that had triggered the command
     async fn run(self: &Self, 
                  _context: &Context, 
-                 _interaction: &ApplicationCommandInteraction)
+                 _interaction: &ApplicationCommandInteraction,
+                 _database: &tokio_postgres::Client)
         -> Result<(), Error>;
 
 }
