@@ -7,6 +7,7 @@ use serenity::model::interactions::application_command::ApplicationCommandIntera
 
 // crate
 use crate::core::command::Command;
+use crate::utils::error::Error;
 
 
 pub struct TestCommand;
@@ -30,12 +31,12 @@ impl Command for TestCommand {
     async fn run(&self, 
                  context: &Context, 
                  command: &ApplicationCommandInteraction) 
-        -> Result<(), String> { 
+        -> Result<(), Error> { 
 
         let channel = command.channel_id;
 
         if let Err(error) = channel.send_message(&context.http, |message| message.content("Hey!")).await {
-            return Err(format!("{}", error));
+            return Err(Error::CommandRun(format!("{}", error)));
         }
 
         Ok(())
