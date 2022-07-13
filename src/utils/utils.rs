@@ -13,6 +13,7 @@ use serenity::builder::CreateEmbed;
 use serenity::model::user::CurrentUser;
 
 // crate
+use crate::utils::rarity::Rarity;
 use crate::utils::colors::Colors;
 use crate::utils::error::Error;
 
@@ -96,6 +97,22 @@ impl Utils {
         });
 
         embed
+    }
+
+    /// Returns the rarity enum value according to the rarity value
+    /// 
+    /// ## Arguments:
+    /// * rarity - the rarity to convert
+    pub fn convert_rarity(rarity: &i16) -> Rarity {
+        match rarity {
+            0 => Rarity::COMMON,
+            1 => Rarity::UNCOMMON,
+            2 => Rarity::SUPER,
+            3 => Rarity::EXTREME,
+            4 => Rarity::ULTRA,
+            5 => Rarity::KAMI,
+            _ => Rarity::COMMON,
+        }
     }
 
 }

@@ -1,4 +1,9 @@
 
+// crate
+use crate::utils::utils::Utils;
+use crate::utils::rarity::Rarity;
+
+
 pub struct CharacterModel {
     id: i32,
     name: String,
@@ -46,6 +51,11 @@ impl CharacterModel {
     /// Returns the character rarity
     pub fn rarity(&self) -> &i16 {
         &self.rarity
+    }
+
+    /// Returns character rarity converted
+    pub fn rarity_converted(&self) -> Rarity {
+        Utils::convert_rarity(&self.rarity)
     }
 
     /// Returns the character image

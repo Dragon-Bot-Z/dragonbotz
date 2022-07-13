@@ -131,7 +131,7 @@ impl BotTrait for Bot {
         let mut failed = false;
         let mut failed_error = String::new();
         let command_to_run = &self.commands[&command.data.name];
-        if let Err(error) = command_to_run.run(&context, &command).await {
+        if let Err(error) = command_to_run.run(&context, &command, &self.database).await {
             failed = true;
             failed_error = error.to_string();
         };

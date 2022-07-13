@@ -1,4 +1,5 @@
 
+#[derive(Debug)]
 pub enum Error {
     CommandRun(String),
     DatabaseConnectionFailed(String),
@@ -6,6 +7,7 @@ pub enum Error {
     EnvironmentVariableParseError(String),
     EnvironmentVariableNotFound(String),
     EnvironmentVariableContainsInvalidCharacters(String),
+    Summon(String),
 }
 
 impl std::fmt::Display for Error {
@@ -17,6 +19,7 @@ impl std::fmt::Display for Error {
             Error::EnvironmentVariableParseError(error) => error,
             Error::EnvironmentVariableNotFound(error) => error,
             Error::EnvironmentVariableContainsInvalidCharacters(error) => error,
+            Error::Summon(error) => error,
         };
 
         write!(f, "{}", content)
