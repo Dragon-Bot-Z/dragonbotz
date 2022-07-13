@@ -39,6 +39,9 @@ pub trait CharacterRepositoryTrait {
     async fn get_character_with_id(self: &Self, id: i32) 
         -> Result<CharacterModel, Error>;
 
+    /// Returns a vector containing all characters stored in the database
+    async fn get_all_characters(self: &Self) -> Result<Vec<CharacterModel>, Error>;
+
 }
 
 #[async_trait]
@@ -66,6 +69,37 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
                 row.get(0), row.get(1), row.get(2), row.get(3), row.get(4)
             )
         )
+    }
+
+    async fn get_all_characters(&self) -> Result<Vec<CharacterModel>, Error> {
+
+        let result = self.database
+            .query(
+                "SELECT *
+                FROM character",
+                &[] 
+            ).await;
+
+        if let Err(error) = result {
+            return Err(Error::DatabaseQueryError(format!("{}", error)));
+        }
+
+        let rows = result.unwrap();
+        let mut characters = Vec::<CharacterModel>::new();
+
+        for row in rows {
+            let character = CharacterModel::new(
+                row.get(0), 
+                row.get(1), 
+                row.get(2), 
+                row.get(3), 
+                row.get(4),
+            );
+
+            characters.push(character);
+        }
+
+        Ok(characters)
     }
 
 }
