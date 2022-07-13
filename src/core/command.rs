@@ -5,6 +5,9 @@ use serenity::async_trait;
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 
+// crate
+use crate::utils::error::Error;
+
 
 #[async_trait]
 pub trait Command: Send + Sync {
@@ -23,7 +26,9 @@ pub trait Command: Send + Sync {
     /// ## Arguments:
     /// * context - the command's context
     /// * interaction - the interaction that had triggered the command
-    async fn run(self: &Self, _context: &Context, _interaction: &ApplicationCommandInteraction)
-        -> Result<(), String>;
+    async fn run(self: &Self, 
+                 _context: &Context, 
+                 _interaction: &ApplicationCommandInteraction)
+        -> Result<(), Error>;
 
 }
