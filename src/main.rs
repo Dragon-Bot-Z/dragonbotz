@@ -19,15 +19,10 @@ use crate::core::command::Command;
 use crate::core::database::Database;
 use crate::core::database::DatabaseTrait;
 
-// test
-use crate::data::repository::player_repository::{
-    PlayerRepository,
-    PlayerRepositoryTrait,
-};
-
 use crate::utils::utils::Utils;
 
 // commands
+use crate::commands::summon::SummonCommand;
 use crate::commands::test::TestCommand;
 
 
@@ -35,8 +30,8 @@ use crate::commands::test::TestCommand;
 #[tokio::main]
 async fn main() {
 
-    let commands: [Box<dyn Command>; 1] = [
-        Box::new(TestCommand),
+    let commands: [Box<dyn Command>; 2] = [
+        Box::new(TestCommand), Box::new(SummonCommand),
     ];
     let mut commands_map = HashMap::<String, Box<dyn Command>>::new();
 
