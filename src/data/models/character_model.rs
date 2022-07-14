@@ -55,7 +55,7 @@ impl CharacterModel {
 
     /// Returns character rarity converted
     pub fn rarity_converted(&self) -> Rarity {
-        Utils::convert_rarity(&self.rarity)
+        Utils::convert_rarity(&self.rarity())
     }
 
     /// Returns the character image
