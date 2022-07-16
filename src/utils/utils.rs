@@ -3,7 +3,21 @@
     // std
 use std::env;
 
+    // rand
+use rand::Rng;
+
+    // chrono
+use chrono;
+use chrono::Datelike;
+
+    // serenity
+use serenity::cache::Cache;
+use serenity::builder::CreateEmbed;
+use serenity::model::user::CurrentUser;
+
 // crate
+use crate::utils::rarity::Rarity;
+use crate::utils::colors::Colors;
 use crate::utils::error::Error;
 
 
@@ -45,6 +59,68 @@ impl Utils {
                 )
             ),
         }
+    }
+
+    /// Returns the current year
+    pub fn current_year() -> i32 {
+        chrono::Utc::now().year()
+    }
+
+    /// Returns the Bot user stored in cache
+    /// 
+    /// ## Arguments:
+    /// * cache - the cache
+    pub fn get_bot_user_from_cache(cache: &Cache) -> CurrentUser {
+        cache.current_user()
+    }
+
+    /// Returns the default bot's embed
+    /// 
+    /// ## Arguments: 
+    /// * cache - the cache
+    pub fn default_embed(cache: &Cache) -> CreateEmbed {
+        let mut embed = CreateEmbed::default();
+
+        let bot = Utils::get_bot_user_from_cache(cache);
+
+        embed.color(Colors::DEFAULT.value());
+        
+        embed.author(|author| {
+            author.name(&bot.name);
+            author.icon_url(&bot.face())
+        });
+        embed.footer(|footer| {
+            footer.icon_url(&bot.face());
+            footer.text(
+                format!(
+                    "Dragon Bot Z - Elias & Lahcene Belhadi © 2019 - {} | GNU/GPL License",
+                    Utils::current_year()
+                )
+            )
+        });
+
+        embed
+    }
+
+    /// Returns the rarity enum value according to the rarity value
+    /// 
+    /// ## Arguments:
+    /// * rarity - the rarity to convert
+    pub fn convert_rarity(rarity: &i16) -> Rarity {
+        match rarity {
+            0 => Rarity::COMMON,
+            1 => Rarity::UNCOMMON,
+            2 => Rarity::SUPER,
+            3 => Rarity::EXTREME,
+            4 => Rarity::ULTRA,
+            5 => Rarity::KAMI,
+            _ => Rarity::COMMON,
+        }
+    }
+
+    /// Returns a random floating point number
+    pub fn random_float() -> f32 {
+        rand::thread_rng().gen_range(0.0..100.0)
     }
 
 }

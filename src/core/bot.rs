@@ -131,9 +131,9 @@ impl BotTrait for Bot {
         let mut failed = false;
         let mut failed_error = String::new();
         let command_to_run = &self.commands[&command.data.name];
-        if let Err(error) = command_to_run.run(&context, &command).await {
+        if let Err(error) = command_to_run.run(&context, &command, &self.database).await {
             failed = true;
-            failed_error = error;
+            failed_error = error.to_string();
         };
 
         // get the original interaction response to delete it
@@ -149,11 +149,6 @@ impl BotTrait for Bot {
                 }
 
                 return;
-            }
-
-            // try to delete the original message
-            if let Err(error) = message.delete(&context.http).await {
-                println!("{}", error)
             }
         }
     }

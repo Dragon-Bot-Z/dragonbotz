@@ -7,17 +7,20 @@ authors = ["Lahcène Belhadi <lahcene.belhadi@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.serenity]
-version = "0.11.2"
+version = "0.11"
 default-features = false
-features = ["client", "gateway", "rustls_backend", "model"]
+features = ["client", "gateway", "rustls_backend", "model", "cache"]
 
 [dependencies.tokio]
-version = "1.19.2"
+version = "1.19"
 features = ["macros", "rt-multi-thread"]
 
 [dependencies.tokio-postgres]
-version = "0.7.6"
+version = "0.7"
 features = ["with-chrono-0_4"]
 
 [dependencies.chrono]
 version = "0.4"
+
+[dependencies.rand]
+version = "0.8"
