@@ -2,6 +2,7 @@ DROP TABLE player CASCADE;
 DROP TABLE character CASCADE;
 DROP TABLE banner CASCADE;
 DROP TABLE banner_content CASCADE;
+DROP TABLE unique_character CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS player(
@@ -31,3 +32,11 @@ CREATE TABLE IF NOT EXISTS banner_content(
 
     UNIQUE (character, banner)
 );
+
+CREATE TABLE IF NOT EXISTS unique_character(
+    id BIGSERIAL PRIMARY KEY,
+    character INTEGER REFERENCES character,
+    owner BIGINT NOT NULL REFERENCES player,
+
+    UNIQUE (id, owner)
+)
