@@ -259,7 +259,7 @@ impl BannerContentRepositoryTrait for BannerContentRepository<'_> {
 
         if let None = character_option {
             return Err(
-                Error::RandomCharacterChoosing("Character is None".to_string())
+                Error::RandomCharacterChoosing("Empty character".to_string())
             );
         }
 

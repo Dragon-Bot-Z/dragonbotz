@@ -3,7 +3,6 @@
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
-use serenity::model::interactions::InteractionResponseType;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 
 // crate
@@ -12,6 +11,11 @@ use crate::core::command::Command;
 use crate::data::repository::banner_content_repository::{
     BannerContentRepository,
     BannerContentRepositoryTrait,
+};
+
+use crate::data::repository::unique_character_repository::{
+    UniqueCharacterRepository,
+    UniqueCharacterRepositoryTrait,
 };
 
 use crate::utils::utils::Utils;
@@ -44,6 +48,13 @@ impl Command for SummonCommand {
         let banner_content_repository = BannerContentRepository::new(&database);
         let character = banner_content_repository
             .draw_character_from_banner_id(1)
+            .await?;
+
+        let unique_character_repository = UniqueCharacterRepository::new(&database);
+        let player = Utils::convert_user_id_to_player_model(command.user.id)?;
+
+        unique_character_repository
+            .add(&character, &player)
             .await?;
 
         let mut embed = Utils::default_embed(&context.cache);
