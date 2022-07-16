@@ -4,9 +4,21 @@ pub enum Rarity {
     UNCOMMON,
     SUPER,
     EXTREME,
-    ORIGINS,
     ULTRA,
     KAMI,
+}
+
+impl Rarity {
+    pub fn id(&self) -> i16 {
+        match &self {
+            Rarity::COMMON => 0,
+            Rarity::UNCOMMON => 1,
+            Rarity::SUPER => 2,
+            Rarity::EXTREME => 3,
+            Rarity::ULTRA => 4,
+            Rarity::KAMI => 5,
+        }
+    }
 }
 
 impl std::fmt::Display for Rarity {
@@ -16,7 +28,6 @@ impl std::fmt::Display for Rarity {
             Rarity::UNCOMMON => "<:rarity_uncommon:996897775348351057> **Uncommon**",
             Rarity::SUPER => "<:rarity_super:996897783225270323> **Super**",
             Rarity::EXTREME => "<:rarity_extreme:996897788543631370> **Extreme**",
-            Rarity::ORIGINS => "<:rarity_extreme:996897788543631370> **Extreme**",
             Rarity::ULTRA => "<:rarity_ultra:996897780314419291> **Ultra**",
             Rarity::KAMI => "<:rarity_kami:996897785532141618> **Kami**",
         };

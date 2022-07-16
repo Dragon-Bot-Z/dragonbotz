@@ -20,6 +20,10 @@ INSERT INTO character(name, rarity, image, thumbnail)
 INSERT INTO character(name, rarity, image, thumbnail) 
     VALUES('Thanus_common', 0, 'https://i.imgur.com/hwsOe06.png', 'https://i.imgur.com/QC3aaUU.png');
 
+INSERT INTO character(name, rarity, image, thumbnail, is_origins) 
+    VALUES('Thanus_origins', 3, 'https://i.imgur.com/hwsOe06.png', 'https://i.imgur.com/QC3aaUU.png', true);
+
+
 -- inserting test values for banner table
 INSERT INTO banner VALUES(DEFAULT, 'Test Banner');
 
@@ -31,3 +35,5 @@ INSERT INTO banner_content VALUES(3, 1);
 INSERT INTO banner_content VALUES(3, 1);
 INSERT INTO banner_content VALUES(4, 1);
 INSERT INTO banner_content VALUES(5, 1);
+INSERT INTO banner_content VALUES(6, 1);
+INSERT INTO banner_content VALUES(7, 1);

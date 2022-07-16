@@ -7,6 +7,7 @@ pub enum Error {
     EnvironmentVariableParseError(String),
     EnvironmentVariableNotFound(String),
     EnvironmentVariableContainsInvalidCharacters(String),
+    RandomCharacterChoosing(String),
     Summon(String),
 }
 
@@ -19,6 +20,7 @@ impl std::fmt::Display for Error {
             Error::EnvironmentVariableParseError(error) => error,
             Error::EnvironmentVariableNotFound(error) => error,
             Error::EnvironmentVariableContainsInvalidCharacters(error) => error,
+            Error::RandomCharacterChoosing(error) => error,
             Error::Summon(error) => error,
         };
 

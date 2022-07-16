@@ -52,7 +52,13 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
 
         let result = self.database
             .query_one(
-                "SELECT *
+                "SELECT character.id,
+                        character.name,
+                        character.rarity,
+                        character.image,
+                        character.thumbnail,
+                        character.is_origins
+
                 FROM character
                 WHERE id = $1::INT4", 
                 &[&id]
@@ -76,7 +82,13 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
 
         let result = self.database
             .query(
-                "SELECT *
+                "SELECT character.id,
+                        character.name,
+                        character.rarity,
+                        character.image,
+                        character.thumbnail,
+                        character.is_origins
+
                 FROM character",
                 &[] 
             ).await;

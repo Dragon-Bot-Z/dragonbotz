@@ -4,6 +4,7 @@ use crate::utils::utils::Utils;
 use crate::utils::rarity::Rarity;
 
 
+#[derive(Clone)]
 pub struct CharacterModel {
     id: i32,
     name: String,

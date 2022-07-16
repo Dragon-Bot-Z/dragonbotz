@@ -3,6 +3,9 @@
     // std
 use std::env;
 
+    // rand
+use rand::Rng;
+
     // chrono
 use chrono;
 use chrono::Datelike;
@@ -113,6 +116,11 @@ impl Utils {
             5 => Rarity::KAMI,
             _ => Rarity::COMMON,
         }
+    }
+
+    /// Returns a random floating point number
+    pub fn random_float() -> f32 {
+        rand::thread_rng().gen_range(0.0..100.0)
     }
 
 }

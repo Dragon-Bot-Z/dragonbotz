@@ -150,11 +150,6 @@ impl BotTrait for Bot {
 
                 return;
             }
-
-            // try to delete the original message
-            if let Err(error) = message.delete(&context.http).await {
-                println!("{}", error)
-            }
         }
     }
 

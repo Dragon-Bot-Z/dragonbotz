@@ -1,20 +1,18 @@
 
 // lib
-    // tokio-postgres
-use tokio_postgres::Client;
-
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
+use serenity::model::interactions::InteractionResponseType;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
-
-    // rand
-use rand::seq::SliceRandom;
 
 // crate
 use crate::core::command::Command;
 
-use crate::data::repository::character_repository::*;
+use crate::data::repository::banner_content_repository::{
+    BannerContentRepository,
+    BannerContentRepositoryTrait,
+};
 
 use crate::utils::utils::Utils;
 use crate::utils::error::Error;
@@ -42,23 +40,11 @@ impl Command for SummonCommand {
                  command: &ApplicationCommandInteraction,
                  database: &tokio_postgres::Client)
         -> Result<(), Error> {
-
-        // get random character from the database
-        let character_repo = CharacterRepository::new(&database);
-        let characters_result = character_repo.get_all_characters().await;
-
-        if let Err(error) = characters_result {
-            return Err(Error::CommandRun(format!("{}", error)));
-        }
-
-        let characters = characters_result.unwrap();
-        let character_option = characters.choose(&mut rand::thread_rng());
-
-        if let None = character_option {
-            return Err(Error::Summon("Character is None.".to_string()));
-        }
-
-        let character = character_option.unwrap();
+        
+        let banner_content_repository = BannerContentRepository::new(&database);
+        let character = banner_content_repository
+            .draw_character_from_banner_id(1)
+            .await?;
 
         let mut embed = Utils::default_embed(&context.cache);
         embed.description(
@@ -74,10 +60,13 @@ Rarity: {}",
         embed.thumbnail(character.thumbnail());
         embed.image(character.image());
 
-        let channel = command.channel_id;
-        let result = channel
-            .send_message(&context.http, |message| message.set_embed(embed))
-            .await;
+        let result = command.edit_original_interaction_response(
+            &context.http, 
+            |message| {
+                message.content("");
+                message.set_embed(embed)
+            }
+        ).await;
 
         if let Err(error) = result {
             return Err(Error::CommandRun(format!("{}", error)));
