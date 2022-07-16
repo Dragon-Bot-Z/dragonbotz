@@ -10,6 +10,7 @@ pub struct CharacterModel {
     rarity: i16,
     image: String,
     thumbnail: String,
+    is_origins: bool,
 }
 
 impl CharacterModel {
@@ -26,7 +27,8 @@ impl CharacterModel {
                name: String, 
                rarity: i16, 
                image: String, 
-               thumbnail: String)
+               thumbnail: String,
+               is_origins: bool)
         -> Self {
 
         Self {
@@ -35,6 +37,7 @@ impl CharacterModel {
             rarity,
             image,
             thumbnail,
+            is_origins,
         }        
     }
 
@@ -67,5 +70,10 @@ impl CharacterModel {
     pub fn thumbnail(&self) -> &String {
         &self.thumbnail
     } 
+
+    /// Tells if the character is Origins
+    pub fn is_origins(&self) -> &bool {
+        &self.is_origins
+    }
 
 }

@@ -66,7 +66,8 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
 
         Ok(
             CharacterModel::new(
-                row.get(0), row.get(1), row.get(2), row.get(3), row.get(4)
+                row.get(0), row.get(1), row.get(2), 
+                row.get(3), row.get(4), row.get(5)
             )
         )
     }
@@ -89,11 +90,8 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
 
         for row in rows {
             let character = CharacterModel::new(
-                row.get(0), 
-                row.get(1), 
-                row.get(2), 
-                row.get(3), 
-                row.get(4),
+                row.get(0), row.get(1), row.get(2), 
+                row.get(3), row.get(4), row.get(5)
             );
 
             characters.push(character);

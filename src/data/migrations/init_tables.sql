@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS character(
     rarity SMALLINT DEFAULT 0,
     image TEXT DEFAULT 'https://i.imgur.com/eMiHxeP.png',
     thumbnail TEXT DEFAULT 'https://i.imgur.com/eMiHxeP.png',
-    
+    is_origin BOOLEAN DEFAULT false,
+
     CHECK (rarity >= 0 AND rarity <= 5)
 );
 
@@ -28,5 +29,6 @@ CREATE TABLE IF NOT EXISTS banner_content(
     character INTEGER REFERENCES character,
     banner INTEGER REFERENCES banner,
 
-    UNIQUE (character, banner)
+    UNIQUE (character, banner),
+    CHECK (character.rarity <= 3)
 );
