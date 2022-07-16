@@ -14,11 +14,14 @@ use chrono::Datelike;
 use serenity::cache::Cache;
 use serenity::builder::CreateEmbed;
 use serenity::model::user::CurrentUser;
+use serenity::model::id::UserId;
 
 // crate
 use crate::utils::rarity::Rarity;
 use crate::utils::colors::Colors;
 use crate::utils::error::Error;
+
+use crate::data::models::player_model::PlayerModel;
 
 
 pub struct Utils;
@@ -121,6 +124,24 @@ impl Utils {
     /// Returns a random floating point number
     pub fn random_float() -> f32 {
         rand::thread_rng().gen_range(0.0..100.0)
+    }
+
+    /// Converts a user id to a partial PlayerModel
+    /// 
+    /// ## Arguments:
+    /// * user_id - the UserId instance to convert
+    pub fn convert_user_id_to_player_model(user_id: UserId) 
+        -> Result<PlayerModel, Error> {
+
+
+        let user_id = user_id.as_u64();
+        let user_id_converted_result = i64::try_from(*user_id);
+
+        if let Err(error) = user_id_converted_result {
+            return Err(Error::UserIdConversion(format!("{}", error)))
+        }
+
+        Ok(PlayerModel::new_partial_with_discord_id(user_id_converted_result.unwrap()))
     }
 
 }
