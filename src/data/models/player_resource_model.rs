@@ -22,4 +22,14 @@ impl PlayerResourceModel {
         }
     }
 
+    /// Returns the player
+    pub fn owner(&self) -> &PlayerModel {
+        &self.owner
+    }
+
+    /// Returns the summon ticket base
+    pub fn summon_ticket_base(&self) -> &i64 {
+        &self.summon_ticket_base
+    }
+
 }

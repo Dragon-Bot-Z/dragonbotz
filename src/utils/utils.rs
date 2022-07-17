@@ -114,7 +114,7 @@ impl Utils {
     /// 
     /// ## Arguments:
     /// * user_id - the UserId instance to convert
-    pub fn convert_user_id_to_player_model(user_id: UserId) 
+    pub fn convert_user_id_to_player_model(user_id: &UserId) 
         -> Result<PlayerModel, Error> {
 
 
