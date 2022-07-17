@@ -3,6 +3,7 @@ DROP TABLE character CASCADE;
 DROP TABLE banner CASCADE;
 DROP TABLE banner_content CASCADE;
 DROP TABLE unique_character CASCADE;
+DROP TABLE player_resource CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS player(
@@ -39,4 +40,9 @@ CREATE TABLE IF NOT EXISTS unique_character(
     owner BIGINT NOT NULL REFERENCES player,
 
     UNIQUE (id, owner)
-)
+);
+
+CREATE TABLE IF NOT EXISTS player_resource(
+    owner BIGINT REFERENCES player,
+    summon_ticket_base BIGINT DEFAULT 0 CHECK (summon_ticket_base >= 0)
+);

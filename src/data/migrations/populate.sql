@@ -37,3 +37,6 @@ INSERT INTO banner_content VALUES(4, 1);
 INSERT INTO banner_content VALUES(5, 1);
 INSERT INTO banner_content VALUES(6, 1);
 INSERT INTO banner_content VALUES(7, 1);
+
+-- inserting test values for player resource
+INSERT INTO player_resource VALUES(136160890000113664, 666);
