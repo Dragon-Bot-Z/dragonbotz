@@ -221,7 +221,6 @@ impl BannerContentRepositoryTrait for BannerContentRepository<'_> {
         -> Result<CharacterModel, Error> {
 
         let draw = Utils::random_float();
-        println!("Draw: {}", draw);
         let mut characters: Vec<CharacterModel> = vec![];
 
         if draw <= DropRate::ORIGINS.value() {
