@@ -105,22 +105,6 @@ impl Utils {
         embed
     }
 
-    /// Returns the rarity enum value according to the rarity value
-    /// 
-    /// ## Arguments:
-    /// * rarity - the rarity to convert
-    pub fn convert_rarity(rarity: &i16) -> Rarity {
-        match rarity {
-            0 => Rarity::COMMON,
-            1 => Rarity::UNCOMMON,
-            2 => Rarity::SUPER,
-            3 => Rarity::EXTREME,
-            4 => Rarity::ULTRA,
-            5 => Rarity::KAMI,
-            _ => Rarity::COMMON,
-        }
-    }
-
     /// Returns a random floating point number
     pub fn random_float() -> f32 {
         rand::thread_rng().gen_range(0.0..100.0)

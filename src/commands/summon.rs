@@ -57,25 +57,11 @@ impl Command for SummonCommand {
             .add(&character, &player)
             .await?;
 
-        let mut embed = Utils::default_embed(&context.cache);
-        embed.description(
-            format!(
-                "Name: **{}** - `#{}`
-Rarity: {}",
-                character.name(),
-                character.id(),
-                character.rarity_converted()
-            )
-        );
-
-        embed.thumbnail(character.thumbnail());
-        embed.image(character.image());
-
         let result = command.edit_original_interaction_response(
             &context.http, 
             |message| {
                 message.content("");
-                message.set_embed(embed)
+                message.set_embed(character.summon_display(&context.cache))
             }
         ).await;
 

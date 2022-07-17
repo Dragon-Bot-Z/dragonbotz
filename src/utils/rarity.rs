@@ -6,6 +6,7 @@ pub enum Rarity {
     EXTREME,
     ULTRA,
     KAMI,
+    ORIGINS,
 }
 
 impl Rarity {
@@ -17,6 +18,7 @@ impl Rarity {
             Rarity::EXTREME => 3,
             Rarity::ULTRA => 4,
             Rarity::KAMI => 5,
+            _ => 0,
         }
     }
 }
@@ -24,14 +26,33 @@ impl Rarity {
 impl std::fmt::Display for Rarity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let rarity = match &self {
-            Rarity::COMMON => "<:rarity_common:996897790334599198> **Common**",
-            Rarity::UNCOMMON => "<:rarity_uncommon:996897775348351057> **Uncommon**",
-            Rarity::SUPER => "<:rarity_super:996897783225270323> **Super**",
-            Rarity::EXTREME => "<:rarity_extreme:996897788543631370> **Extreme**",
-            Rarity::ULTRA => "<:rarity_ultra:996897780314419291> **Ultra**",
-            Rarity::KAMI => "<:rarity_kami:996897785532141618> **Kami**",
+            Rarity::COMMON => "**Common**",
+            Rarity::UNCOMMON => "**Uncommon**",
+            Rarity::SUPER => "**Super**",
+            Rarity::EXTREME => "**Extreme**",
+            Rarity::ULTRA => "**Ultra**",
+            Rarity::KAMI => "**Kami**",
+            Rarity::ORIGINS => "*Origins*"
         };
 
         write!(f, "{}", rarity)
+    }
+}
+
+impl Rarity {
+    /// Returns the rarity enum value according to the rarity id
+    /// 
+    /// ## Arguments:
+    /// * id - the rarity id
+    pub fn from_id(rarity: &i16) -> Rarity {
+        match rarity {
+            0 => Rarity::COMMON,
+            1 => Rarity::UNCOMMON,
+            2 => Rarity::SUPER,
+            3 => Rarity::EXTREME,
+            4 => Rarity::ULTRA,
+            5 => Rarity::KAMI,
+            _ => Rarity::COMMON,
+        }
     }
 }
