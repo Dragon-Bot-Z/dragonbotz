@@ -7,6 +7,9 @@ pub enum Icons {
     // others
     UNKNOWN,
 
+    // items
+    SummonTicketBase,
+
     // rarity
     COMMON,
     UNCOMMON,
@@ -31,6 +34,8 @@ impl std::fmt::Display for Icons {
             Icons::ULTRA => "<:rarity_ultra:996897780314419291>",
             Icons::KAMI => "<:rarity_kami:996897785532141618>",
             Icons::ORIGINS => "<:rarity_origins:998240766700814376>",
+
+            _ => "<:unknown:998265915437240390>",
         };
 
         write!(f, "{}", content)

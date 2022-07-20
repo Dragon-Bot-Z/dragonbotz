@@ -18,7 +18,14 @@ use crate::data::repository::unique_character_repository::{
     UniqueCharacterRepositoryTrait,
 };
 
+use crate::data::repository::player_resource_repository::{
+    PlayerResourceRepository,
+    PlayerResourceRepositoryTrait,
+};
+
 use crate::utils::utils::Utils;
+use crate::utils::cost::Cost;
+use crate::utils::items::Items;
 use crate::utils::error::Error;
 
 
@@ -44,6 +51,20 @@ impl Command for SummonCommand {
                  command: &ApplicationCommandInteraction,
                  database: &tokio_postgres::Client)
         -> Result<(), Error> {
+
+        let player = Utils::convert_user_id_to_player_model(&command.user.id)?;
+
+        // check if the player has enough tickets
+        let player_resource_repository = PlayerResourceRepository::new(&database);
+        let player_resource_model = player_resource_repository
+            .get_player_resource_with_discord_id(player.discord_id())
+            .await?;
+
+        if *player_resource_model.summon_ticket_base() < Cost::SUMMON_BASIC.value() {
+            return Err(Error::NotEnoughResources(
+                format!("You do not have enough {} to proceed", Items::SummonTicketBase))
+            )
+        }
         
         let banner_content_repository = BannerContentRepository::new(&database);
         let character = banner_content_repository
@@ -51,10 +72,13 @@ impl Command for SummonCommand {
             .await?;
 
         let unique_character_repository = UniqueCharacterRepository::new(&database);
-        let player = Utils::convert_user_id_to_player_model(command.user.id)?;
 
         unique_character_repository
             .add(&character, &player)
+            .await?;
+
+        player_resource_repository
+            .remove_summon_ticket_basic_to(&player, Cost::SUMMON_BASIC.value())
             .await?;
 
         let result = command.edit_original_interaction_response(

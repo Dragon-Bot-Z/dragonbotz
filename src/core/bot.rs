@@ -20,6 +20,12 @@ use serenity::prelude::EventHandler;
 // crate
 use crate::core::command::Command;
 
+use crate::utils::utils::Utils;
+use crate::utils::check::{
+    Check,
+    CheckTrait,
+};
+
 
 pub struct Bot {
 
@@ -114,6 +120,35 @@ impl BotTrait for Bot {
                                    command: &ApplicationCommandInteraction) {
         // check if the command exists
         if let Err(_) = self.check_if_slash_command_exists(&context, &command).await {
+            return;
+        }
+
+        let player = Utils::convert_user_id_to_player_model(&command.user.id);
+        if let Err(_) = player {
+            return;
+        }
+
+        let player = player.unwrap();
+
+        // check if the player exists in the database
+        let exists = Check::user_exists(&self.database, &player.discord_id()).await;
+        if let Err(_) = exists {
+            return;
+        }
+
+        let exists = exists.unwrap();
+        if !exists {
+            if let Err(error) = command.create_interaction_response(
+                &context.http, 
+                |response| {
+                    response.interaction_response_data(
+                        |message| message.content("❌ You must be registered in our database to use this command, type `/start` to continue")
+                    )
+                }
+            ).await {
+                println!("{}", error);
+            }
+
             return;
         }
 
