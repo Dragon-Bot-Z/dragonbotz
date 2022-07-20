@@ -8,7 +8,7 @@ pub enum Icons {
     UNKNOWN,
 
     // items
-    SUMMON_TICKET_BASIC,
+    SummonTicketBase,
 
     // rarity
     COMMON,

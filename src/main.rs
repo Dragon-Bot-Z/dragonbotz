@@ -22,6 +22,7 @@ use crate::core::database::DatabaseTrait;
 use crate::utils::utils::Utils;
 
 // commands
+use crate::commands::inventory::InventoryCommand;
 use crate::commands::summon::SummonCommand;
 use crate::commands::test::TestCommand;
 
@@ -30,8 +31,8 @@ use crate::commands::test::TestCommand;
 #[tokio::main]
 async fn main() {
 
-    let commands: [Box<dyn Command>; 2] = [
-        Box::new(TestCommand), Box::new(SummonCommand),
+    let commands: [Box<dyn Command>; 3] = [
+        Box::new(TestCommand), Box::new(SummonCommand), Box::new(InventoryCommand),
     ];
     let mut commands_map = HashMap::<String, Box<dyn Command>>::new();
 

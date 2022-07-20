@@ -62,7 +62,7 @@ impl Command for SummonCommand {
 
         if *player_resource_model.summon_ticket_base() < Cost::SUMMON_BASIC.value() {
             return Err(Error::NotEnoughResources(
-                format!("You do not have enough {} to proceed", Items::SUMMON_TICKET_BASIC))
+                format!("You do not have enough {} to proceed", Items::SummonTicketBase))
             )
         }
         

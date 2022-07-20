@@ -8,9 +8,10 @@ pub enum Error {
     EnvironmentVariableParseError(String),
     EnvironmentVariableNotFound(String),
     EnvironmentVariableContainsInvalidCharacters(String),
+    InventoryCommand(String),
     NotEnoughResources(String),
     RandomCharacterChoosing(String),
-    Summon(String),
+    SummonCommand(String),
     UserIdConversion(String),
 }
 
@@ -24,9 +25,10 @@ impl std::fmt::Display for Error {
             Error::EnvironmentVariableParseError(error) => format!("Command execution: {}", error),
             Error::EnvironmentVariableNotFound(error) => format!("Environment variable not found error: {}", error),
             Error::EnvironmentVariableContainsInvalidCharacters(error) => format!("Environment variable contains invalid characters error: {}", error),
-            Error::NotEnoughResources(error) => format!("Player not enough resources error: {}", error),
+            Error::InventoryCommand(error) => format!("Inventory command error: {}", error),
+            Error::NotEnoughResources(error) => format!("Not enough resources error: {}", error),
             Error::RandomCharacterChoosing(error) => format!("Random character choosing error: {}", error),
-            Error::Summon(error) => format!("Summon error: {}", error),
+            Error::SummonCommand(error) => format!("Summon command error: {}", error),
             Error::UserIdConversion(error) => format!("User id conversion error: {}", error),
         };
 
