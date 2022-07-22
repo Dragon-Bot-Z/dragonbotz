@@ -24,6 +24,12 @@ pub trait Command: Send + Sync {
     /// Returns the command's description
     fn description(self: &Self) -> String;
 
+    /// Tells if the players has to be registered to use this command
+    fn player_needs_to_exist(self: &Self) -> bool { true }
+
+    /// Tells if the players has to not exist to use this command
+    fn player_has_to_not_exist(self: &Self) -> bool { false }
+
     /// Executes the command's process
     /// 
     /// ## Arguments:

@@ -103,7 +103,7 @@ impl BannerContentRepositoryTrait for BannerContentRepository<'_> {
             ).await;
         
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)))
+            return Err(Error::DatabaseQueryError(format!("{} while fetching the content of the banner", error)))
         }
 
         let mut characters = Vec::<CharacterModel>::new();
@@ -158,7 +158,7 @@ impl BannerContentRepositoryTrait for BannerContentRepository<'_> {
             ).await;
         
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)))
+            return Err(Error::DatabaseQueryError(format!("{} while fetching the content of the banner by rarity", error)))
         }
 
         let mut characters = Vec::<CharacterModel>::new();
@@ -199,7 +199,7 @@ impl BannerContentRepositoryTrait for BannerContentRepository<'_> {
             ).await;
         
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)))
+            return Err(Error::DatabaseQueryError(format!("{} while fetching the origins content of the banner", error)))
         }
 
         let rows = result.unwrap();

@@ -65,7 +65,7 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
             ).await;
 
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)));
+            return Err(Error::DatabaseQueryError(format!("{} while fetching a the character", error)));
         }
 
         let row = result.unwrap();
@@ -94,7 +94,7 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
             ).await;
 
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)));
+            return Err(Error::DatabaseQueryError(format!("{} while fetching all characters", error)));
         }
 
         let rows = result.unwrap();

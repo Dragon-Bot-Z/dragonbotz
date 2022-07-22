@@ -56,7 +56,7 @@ impl BannerRepositoryTrait for BannerRepository<'_> {
             ).await;
         
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)));
+            return Err(Error::DatabaseQueryError(format!("{} while fetching the banner data", error)));
         }
 
         let row = result.unwrap();

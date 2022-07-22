@@ -69,6 +69,12 @@ impl Utils {
         chrono::Utc::now().year()
     }
 
+    /// Returns the current date
+    pub fn current_date() -> chrono::NaiveDate {
+        let now = chrono::Utc::now();
+        chrono::naive::NaiveDate::from_ymd(now.year(), now.month(), now.day())
+    }
+
     /// Returns the Bot user stored in cache
     /// 
     /// ## Arguments:

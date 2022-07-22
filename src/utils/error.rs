@@ -11,6 +11,8 @@ pub enum Error {
     InventoryCommand(String),
     NotEnoughResources(String),
     RandomCharacterChoosing(String),
+    RewardMessage(String),
+    StartCommand(String),
     SummonCommand(String),
     UserIdConversion(String),
 }
@@ -28,6 +30,8 @@ impl std::fmt::Display for Error {
             Error::InventoryCommand(error) => format!("Inventory command error: {}", error),
             Error::NotEnoughResources(error) => format!("Not enough resources error: {}", error),
             Error::RandomCharacterChoosing(error) => format!("Random character choosing error: {}", error),
+            Error::StartCommand(error) => format!("Start command error: {}", error),
+            Error::RewardMessage(error) => format!("Reward message error: {}", error),
             Error::SummonCommand(error) => format!("Summon command error: {}", error),
             Error::UserIdConversion(error) => format!("User id conversion error: {}", error),
         };

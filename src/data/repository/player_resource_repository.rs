@@ -32,6 +32,13 @@ impl<'a> PlayerResourceRepository<'a> {
 #[async_trait]
 pub trait PlayerResourceRepositoryTrait {
 
+    /// Inserts a new player into the table
+    /// tickets
+    /// 
+    /// ## Arguments:
+    /// * discord_id - the player's discord id
+    async fn add_player(self: &Self, discord_id: &i64) -> Result<(), Error>;
+
     /// Returns a PlayerResourceModel instance for the discord id
     /// passed as argument
     /// 
@@ -40,14 +47,24 @@ pub trait PlayerResourceRepositoryTrait {
     async fn get_player_resource_with_discord_id(self: &Self, discord_id: &i64)
         -> Result<PlayerResourceModel, Error>;
     
-    /// Remove the specified amount of basic summon tickets from the player
+    /// Remove the specified amount of base summon tickets from the player
     /// 
     /// ## Arguments:
     /// * owner - the owner
     /// * amount - the amount to remove
-    async fn remove_summon_ticket_basic_to(self: &Self, 
-                                           owner: &PlayerModel, 
-                                           amount: i64) 
+    async fn remove_base_summon_ticket_to(self: &Self, 
+                                          owner: &PlayerModel, 
+                                          amount: i64) 
+        -> Result<(), Error>;
+
+    /// Adds the specified amount of base summon tickets to the player
+    /// 
+    /// ## Arguments:
+    /// * owner - the player that will receive the base summon ticket
+    /// * amount - the amount of base summon tickets to add
+    async fn add_base_summon_ticket_to(self: &Self,
+                                       owner: &PlayerModel,
+                                       amount: &i64)
         -> Result<(), Error>;
 
 }
@@ -55,13 +72,28 @@ pub trait PlayerResourceRepositoryTrait {
 #[async_trait]
 impl PlayerResourceRepositoryTrait for PlayerResourceRepository<'_> {
 
+    async fn add_player(&self, discord_id: &i64) -> Result<(), Error> {
+
+        if let Err(error) = self.database
+            .execute(
+                "INSERT INTO player_resource (owner)
+                 VALUES ($1::INT8)", 
+                 &[discord_id]
+            ).await {
+
+            return Err(Error::DatabaseExecuteError(format!("{} while inserting player data to player resource table", error)))
+        }
+
+        Ok(())
+    }
+
     async fn get_player_resource_with_discord_id(&self, discord_id: &i64)
         -> Result<PlayerResourceModel, Error> {
 
         let result = self.database
             .query_one(
                 "SELECT owner,
-                        summon_ticket_base
+                        base_summon_ticket
                     
                 FROM player_resource
                 WHERE owner = $1::INT8",
@@ -70,7 +102,7 @@ impl PlayerResourceRepositoryTrait for PlayerResourceRepository<'_> {
         
         if let Err(error) = result {
             return Err(
-                Error::DatabaseQueryError(format!("{}", error))
+                Error::DatabaseQueryError(format!("{} while fetching player resources", error))
             )
         }
 
@@ -80,15 +112,15 @@ impl PlayerResourceRepositoryTrait for PlayerResourceRepository<'_> {
         Ok(PlayerResourceModel::new(owner, row.get(1)))
     }
 
-    async fn remove_summon_ticket_basic_to(&self, 
-                                           owner: &PlayerModel, 
-                                           amount: i64)
+    async fn remove_base_summon_ticket_to(&self, 
+                                          owner: &PlayerModel, 
+                                          amount: i64)
         -> Result<(), Error> {
 
         let result = self.database
             .execute(
                 "UPDATE player_resource
-                 SET summon_ticket_base = summon_ticket_base - $1::INT8
+                 SET base_summon_ticket = base_summon_ticket - $1::INT8
                  WHERE owner = $2::INT8",
                  &[&amount, owner.discord_id()]
             ).await;
@@ -99,6 +131,25 @@ impl PlayerResourceRepositoryTrait for PlayerResourceRepository<'_> {
             )
         }
 
+        Ok(())
+    }
+
+    async fn add_base_summon_ticket_to(&self, 
+                                       owner: &PlayerModel, 
+                                       amount: &i64)
+        -> Result<(), Error> {
+
+        if let Err(error) = self.database
+            .execute(
+                "UPDATE player_resource
+                SET base_summon_ticket = base_summon_ticket + $1::INT8
+                WHERE owner = $2::INT8",
+                &[amount, owner.discord_id()]
+            ).await {
+
+            return Err(Error::DatabaseExecuteError(format!("{}", error)))        
+        }
+        
         Ok(())
     }
 
