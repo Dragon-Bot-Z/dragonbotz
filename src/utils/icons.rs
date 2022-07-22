@@ -8,7 +8,7 @@ pub enum Icons {
     UNKNOWN,
 
     // items
-    SummonTicketBase,
+    BaseSummonTicket,
 
     // rarity
     COMMON,
@@ -25,6 +25,9 @@ impl std::fmt::Display for Icons {
         let content = match &self {
             // others
             Icons::UNKNOWN => "<:unknown:998265915437240390>",
+
+            // icons
+            Icons::BaseSummonTicket => "<:base_summon_ticket:999418886988505088>",
 
             // rarity
             Icons::COMMON => "<:rarity_common:996897790334599198>",

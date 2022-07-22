@@ -4,13 +4,13 @@ use crate::utils::icons::Icons;
 
 
 pub enum Items {
-    SummonTicketBase,
+    BaseSummonTicket,
 }
 
 impl std::fmt::Display for Items {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let content = match &self {
-            Items::SummonTicketBase => format!("{} **Base summon ticket**", Icons::SummonTicketBase),
+            Items::BaseSummonTicket => format!("{} **Base summon ticket**", Icons::BaseSummonTicket),
         };
 
         write!(f, "{}", content)
