@@ -1,5 +1,12 @@
 
 // lib
+    // sync
+use std::sync::Arc;
+use std::sync::Mutex;
+
+    // tokio
+use tokio;
+
     // tokio-postgres
 use tokio_postgres;
 
@@ -42,6 +49,13 @@ pub trait UniqueCharacterRepositoryTrait {
     async fn add(self: &Self, character: &CharacterModel, owner: &PlayerModel)
         -> Result<(), Error>;
 
+    /// Returns the players characters and their count
+    /// 
+    /// ## Arguments:
+    /// * owner - the player
+    async fn get_player_unique_characters_and_count(&self, owner: &PlayerModel)
+        -> Result<Vec<(CharacterModel, i64)>, Error>;
+
 }
 
 #[async_trait]
@@ -63,6 +77,63 @@ impl UniqueCharacterRepositoryTrait for UniqueCharacterRepository<'_> {
                 Error::DatabaseExecuteError(format!("{}", error))
             )
         }
+    }
+
+    async fn get_player_unique_characters_and_count(&self, owner: &PlayerModel)
+        -> Result<Vec<(CharacterModel, i64)>, Error> {
+        
+        let result = self.database
+            .query(
+                "SELECT character.id,
+                        character.name,
+                        character.rarity,
+                        character.image,
+                        character.thumbnail,
+                        character.is_origins,
+                        COUNT(character.id)
+                    
+                FROM character
+                INNER JOIN unique_character
+                ON unique_character.character = character.id
+                WHERE unique_character.owner = $1::INT8
+                GROUP BY character.id
+                ORDER BY character.id ASC", 
+                &[owner.discord_id()]
+            ).await;
+        
+        if let Err(error) = result {
+            return Err(Error::DatabaseQueryError(format!("{} while fetching the player's box", error)))
+        }
+
+        let player_characters = result.unwrap();
+
+        let characters_join = tokio::spawn(
+            async move {
+                let mut characters: Vec<(CharacterModel, i64)> = vec![];
+                for row in player_characters {
+                    let character = CharacterModel::new(
+                        row.get(0),
+                        row.get(1),
+                        row.get(2),
+                        row.get(3),
+                        row.get(4),
+                        row.get(5)
+                    );
+
+                    // add the Character and the count
+                    characters.push((character, row.get(6)));
+                }
+                
+                characters
+            }
+        );
+
+        let characters = match characters_join.await {
+            Ok(characters) => characters,
+            Err(error) => return Err(Error::Box(format!("{} while asynchronously fetching player's box", error)))
+        };
+
+        Ok(characters)
     }
 
 }

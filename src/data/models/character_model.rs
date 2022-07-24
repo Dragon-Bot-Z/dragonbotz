@@ -120,8 +120,8 @@ impl CharacterModel {
             format!(
                 "Name: {} - {}
 Rarity: {}",
-                self.name_formatted(),
                 self.id_formatted(),
+                self.name_formatted(),
                 rarity
             )
         );
@@ -131,6 +131,20 @@ Rarity: {}",
         embed.color(Colors::from_rarity(&self.rarity_converted()));
 
         embed
+    }
+
+    /// Returns the short display of the character
+    pub fn short_display(&self) -> String {
+        let mut rarity = format!("{}", Icons::from_rarity(&self.rarity_converted()));
+        if *self.is_origins() {
+            rarity = format!(
+                "{}{}", 
+                Icons::from_rarity(&self.rarity_converted()),
+                Icons::ORIGINS
+            );
+        }
+
+        format!("{} - {}{}", self.id_formatted(), self.name_formatted(), rarity)
     }
 
 }
