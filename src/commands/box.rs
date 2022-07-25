@@ -152,7 +152,7 @@ impl BoxCommandTrait for BoxCommand {
         -> Result<(), Error> {
 
         // number of characters to display per box page
-        let display_per_page = 1;
+        let display_per_page = 5;
 
         BoxCommand::display_page(
             &context, &interaction, &player, &0, &characters, &display_per_page
