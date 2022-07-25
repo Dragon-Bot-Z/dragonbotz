@@ -7,6 +7,8 @@ use tokio_postgres;
 use serenity::async_trait;
 use serenity::client::Context;
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
+use serenity::model::interactions::message_component::ButtonStyle;
+use serenity::builder::CreateButton;
 
 // crate
 use crate::data::repository::unique_character_repository::{
@@ -31,7 +33,7 @@ impl BoxCommand {
     /// ## Arguments:
     /// * number_of_characters - the total number of characters
     /// * display_per_page - the number of characters to display per page
-    fn total_number_of_pages(number_of_characters: u32, display_per_page: u32) 
+    fn total_number_of_pages(number_of_characters: &u32, display_per_page: &u32) 
         -> u32 {
         
         // simply calculates the total number of pages by substracting the
@@ -46,9 +48,13 @@ impl BoxCommand {
         // difference > 0.0, so total = integer + 1 = 6 pages
         let real_number_of_pages: f32 = (number_of_characters/display_per_page) as f32;
         let number_of_pages: u32 = number_of_characters/display_per_page;
-        let difference: f32 = real_number_of_pages - number_of_characters as f32;
+        let difference: f32 = real_number_of_pages - *number_of_characters as f32;
 
         let mut total = number_of_pages;
+        if total == 0 {
+            total = 1;
+        }
+
         if difference > 0.0 {
             total += 1;
         }
@@ -109,9 +115,27 @@ trait BoxCommandTrait {
     /// * display_per_page - the number of characters to display per page
     async fn display_page(context: &Context,
                           interaction: &ApplicationCommandInteraction,
+                          player: &PlayerModel,
                           page: &u32, 
                           characters: &Vec<(CharacterModel, i64)>,
                           display_per_page: &u32)
+        -> Result<(), Error>;
+
+    /// Allows the player to change the box page
+    /// 
+    /// ## Argupments:
+    /// * context - the context
+    /// * interaction - the interaction that triggered the box
+    /// * player - the player to await
+    /// * page - the starting page
+    /// * number_of_characters - the total number of characters
+    /// * display_per_page - the number of characters to display per page
+    async fn page_switching(context: &Context,
+                            interaction: &ApplicationCommandInteraction,
+                            player: &PlayerModel,
+                            page: &u32,
+                            number_of_characters: &u32,
+                            display_per_page: &u32)
         -> Result<(), Error>;
 
 }
@@ -129,7 +153,7 @@ impl BoxCommandTrait for BoxCommand {
         let display_per_page = 10;
 
         BoxCommand::display_page(
-            &context, &interaction, &0, &characters, &display_per_page
+            &context, &interaction, &player, &0, &characters, &display_per_page
         ).await?;
         
         Ok(())
@@ -137,6 +161,7 @@ impl BoxCommandTrait for BoxCommand {
 
     async fn display_page(context: &Context, 
                           interaction: &ApplicationCommandInteraction, 
+                          player: &PlayerModel,
                           page: &u32, 
                           characters: &Vec<(CharacterModel, i64)>, 
                           display_per_page: &u32)
@@ -172,6 +197,102 @@ impl BoxCommandTrait for BoxCommand {
         ).await {
 
             return Err(Error::Box(format!("{} while displaying player's box content", error)))
+        }
+
+        BoxCommand::page_switching(
+            &context, &interaction, &player, 
+            &page, &(characters.len() as u32), &display_per_page
+        ).await?;
+
+        Ok(())
+    }
+
+    async fn page_switching(context: &Context,
+                            interaction: &ApplicationCommandInteraction,
+                            player: &PlayerModel,
+                            page: &u32,
+                            number_of_characters: &u32,
+                            display_per_page: &u32)
+        -> Result<(), Error> {
+
+        let mut page = page.clone();
+        let total_pages = BoxCommand::total_number_of_pages(
+            &number_of_characters, &display_per_page
+        );
+
+        // set buttons
+        // go to first page button
+        let mut first_page_button = CreateButton::default();
+        first_page_button
+            .style(ButtonStyle::Primary)
+            .custom_id("box_first_page_button")
+            .label("<<");
+
+        if page == 0 {
+            first_page_button.disabled(true);
+        }
+
+        // go to previous page button
+        let mut previous_page_button = CreateButton::default();
+        previous_page_button
+            .style(ButtonStyle::Primary)
+            .custom_id("box_prev_page_button")
+            .label("<");
+
+        if page == 0 {
+            previous_page_button.disabled(true);
+        }
+
+        // middle button displaying the current page
+        let mut middle_button = CreateButton::default();
+        middle_button
+            .style(ButtonStyle::Secondary)
+            .label(format!("{}/{}", page+1, total_pages))
+            .custom_id("box_middle_button_button")
+            .disabled(true);
+
+        // go to next page button
+        let mut next_page_button = CreateButton::default();
+        next_page_button
+            .style(ButtonStyle::Primary)
+            .custom_id("box_next_page_button")
+            .label(">");
+        
+        if page == total_pages-1 {
+            next_page_button.disabled(true);
+        }
+
+        // go the last page button
+        let mut last_page_button = CreateButton::default();
+        last_page_button
+            .style(ButtonStyle::Primary)
+            .custom_id("box_last_page_button")
+            .label(">>");
+
+        if page == total_pages-1 {
+            last_page_button.disabled(true);
+        }
+
+        // add buttons to the message
+        if let Err(error) = interaction.edit_original_interaction_response(
+            &context.http, 
+            |message| {
+                message.components(
+                    |components| {
+                        components.create_action_row(
+                            |action_row| action_row
+                                .add_button(first_page_button)
+                                .add_button(previous_page_button)
+                                .add_button(middle_button)
+                                .add_button(next_page_button)
+                                .add_button(last_page_button)
+                        )
+                    }
+                )
+            }
+        ).await {
+
+            return Err(Error::Box(format!("{} while adding components to the box message", error)))
         }
 
         Ok(())
