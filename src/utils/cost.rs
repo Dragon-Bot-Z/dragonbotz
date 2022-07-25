@@ -8,7 +8,6 @@ impl Cost {
     pub fn value(&self) -> i64 {
         match &self {
             Cost::SummonBase => 1,
-            _ => 0,
         }
     }
 }

@@ -46,10 +46,10 @@ impl BoxCommand {
         // integer = 5
         // difference = real - integer <=> 5.3 - 5 = 0.3
         // difference > 0.0, so total = integer + 1 = 6 pages
-        let real_number_of_pages: f32 = (number_of_characters/display_per_page) as f32;
+        let real_number_of_pages: f32 = *number_of_characters as f32 / *display_per_page as f32;
         let number_of_pages: u32 = number_of_characters/display_per_page;
-        let difference: f32 = real_number_of_pages - *number_of_characters as f32;
-
+        let difference: f32 = real_number_of_pages - number_of_pages as f32;
+        
         let mut total = number_of_pages;
         if total == 0 {
             total = 1;
@@ -79,7 +79,7 @@ impl BoxCommand {
         slice[0] = (page * display_per_page) as usize;
 
         if number_of_characters-page * display_per_page > *display_per_page {
-            slice[1] = ((display_per_page-1)+page*display_per_page) as usize;
+            slice[1] = ((display_per_page)+page*display_per_page) as usize;
         } else {
             slice[1] = *number_of_characters as usize;
         }
@@ -130,12 +130,14 @@ trait BoxCommandTrait {
     /// * page - the starting page
     /// * number_of_characters - the total number of characters
     /// * display_per_page - the number of characters to display per page
+    /// * characters - the characters to display
     async fn page_switching(context: &Context,
                             interaction: &ApplicationCommandInteraction,
                             player: &PlayerModel,
                             page: &u32,
                             number_of_characters: &u32,
-                            display_per_page: &u32)
+                            display_per_page: &u32,
+                            characters: &Vec<(CharacterModel, i64)>)
         -> Result<(), Error>;
 
 }
@@ -150,7 +152,7 @@ impl BoxCommandTrait for BoxCommand {
         -> Result<(), Error> {
 
         // number of characters to display per box page
-        let display_per_page = 10;
+        let display_per_page = 1;
 
         BoxCommand::display_page(
             &context, &interaction, &player, &0, &characters, &display_per_page
@@ -168,7 +170,7 @@ impl BoxCommandTrait for BoxCommand {
         -> Result<(), Error> {
 
         if characters.len() == 0 {
-            return Err(Error::Box("You don't have enough characters".to_string()))
+            return Err(Error::BoxCommand("You don't have enough characters".to_string()))
         }
 
         let slice = BoxCommand::page_slice(
@@ -196,12 +198,12 @@ impl BoxCommandTrait for BoxCommand {
             }
         ).await {
 
-            return Err(Error::Box(format!("{} while displaying player's box content", error)))
+            return Err(Error::BoxCommand(format!("{} while displaying player's box content", error)))
         }
 
         BoxCommand::page_switching(
             &context, &interaction, &player, 
-            &page, &(characters.len() as u32), &display_per_page
+            &page, &(characters.len() as u32), &display_per_page, &characters
         ).await?;
 
         Ok(())
@@ -212,10 +214,11 @@ impl BoxCommandTrait for BoxCommand {
                             player: &PlayerModel,
                             page: &u32,
                             number_of_characters: &u32,
-                            display_per_page: &u32)
+                            display_per_page: &u32,
+                            characters: &Vec<(CharacterModel, i64)>)
         -> Result<(), Error> {
 
-        let mut page = page.clone();
+        let page = page.clone();
         let total_pages = BoxCommand::total_number_of_pages(
             &number_of_characters, &display_per_page
         );
@@ -292,8 +295,45 @@ impl BoxCommandTrait for BoxCommand {
             }
         ).await {
 
-            return Err(Error::Box(format!("{} while adding components to the box message", error)))
+            return Err(Error::BoxCommand(format!("{} while adding components to the box message", error)))
         }
+
+        // wait for the user to click a button
+        let box_message = match interaction.get_interaction_response(&context.http).await {
+            Ok(box_message) => box_message,
+            Err(error) => return Err(Error::BoxCommand(format!("{error} while waiting for player's interaction"))),
+        };
+
+        let component_interaction = box_message
+            .await_component_interaction(&context.shard)
+            .author_id(interaction.user.id)
+            .message_id(box_message.id)
+            .timeout(std::time::Duration::from_secs(60))
+            .await;
+        
+        if let None = component_interaction {
+            if let Err(error) = box_message.delete(&context.http).await {
+                return Err(Error::BoxCommand(format!("{error} while trying to delete box message after time out")))
+            }
+        }
+
+        let button_clicked = component_interaction.unwrap();
+        if let Err(_) = button_clicked
+            .create_interaction_response(&context.http, |response| response)
+            .await {}
+
+        let next_page_to_display = match button_clicked.data.custom_id.as_str() {
+            "box_first_page_button" => 0,
+            "box_prev_page_button" => page-1,
+            "box_next_page_button" => page+1,
+            "box_last_page_button" => total_pages-1,
+            &_ => page,
+        };
+
+        BoxCommand::display_page(
+            &context, &interaction, &player, 
+            &next_page_to_display, &characters, &display_per_page
+        ).await?;
 
         Ok(())
     }

@@ -1,7 +1,7 @@
 
 #[derive(Debug)]
 pub enum Error {
-    Box(String),
+    BoxCommand(String),
     CommandRun(String),
     DatabaseConnectionFailed(String),
     DatabaseQueryError(String),
@@ -21,7 +21,7 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let content = match self {
-            Error::Box(error) => format!("Box error: {}", error),
+            Error::BoxCommand(error) => format!("Box error: {}", error),
             Error::CommandRun(error) => format!("Command execution error: {}", error),
             Error::DatabaseConnectionFailed(error) => format!("Database connection error: {}", error),
             Error::DatabaseQueryError(error) => format!("Database Query error: {}", error),

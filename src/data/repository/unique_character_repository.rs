@@ -1,9 +1,5 @@
 
 // lib
-    // sync
-use std::sync::Arc;
-use std::sync::Mutex;
-
     // tokio
 use tokio;
 
@@ -130,7 +126,7 @@ impl UniqueCharacterRepositoryTrait for UniqueCharacterRepository<'_> {
 
         let characters = match characters_join.await {
             Ok(characters) => characters,
-            Err(error) => return Err(Error::Box(format!("{} while asynchronously fetching player's box", error)))
+            Err(error) => return Err(Error::BoxCommand(format!("{} while asynchronously fetching player's box", error)))
         };
 
         Ok(characters)

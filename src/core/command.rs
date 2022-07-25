@@ -1,8 +1,5 @@
 
 // lib
-    // tokio-postgres
-use tokio_postgres::Client;
-
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
