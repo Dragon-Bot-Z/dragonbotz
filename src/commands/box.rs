@@ -6,9 +6,16 @@ use tokio_postgres;
     // serenity
 use serenity::async_trait;
 use serenity::client::Context;
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
-use serenity::model::interactions::message_component::ButtonStyle;
+
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
+use serenity::model::application::component::ButtonStyle;
+use serenity::model::application::component::ActionRowComponent;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::channel::ReactionType;
+use serenity::model::id::EmojiId;
+
 use serenity::builder::CreateButton;
+use serenity::builder::CreateApplicationCommandOption;
 
 // crate
 use crate::data::repository::unique_character_repository::{
@@ -22,6 +29,7 @@ use crate::data::models::character_model::CharacterModel;
 use crate::core::command::Command;
 use crate::utils::utils::Utils;
 use crate::utils::error::Error;
+use crate::utils::icons::Icons;
 
 
 pub struct BoxCommand;
@@ -55,7 +63,7 @@ impl BoxCommand {
             total = 1;
         }
 
-        if difference > 0.0 {
+        if difference > 0.0 && *number_of_characters > *display_per_page {
             total += 1;
         }
 
@@ -87,23 +95,88 @@ impl BoxCommand {
         slice
     }
 
+    /// Checks the player has enough characters
+    /// 
+    /// ## Arguments:
+    /// * characters - the player's characters
+    fn check_player_has_enough_unique_characters(characters: &Vec<CharacterModel>)
+        -> Result<(), Error> {
+
+        if characters.len() == 0 {
+            return Err(Error::BoxCommand("You don't have this character".to_string()))
+        }
+
+        Ok(())
+    }
+
+    /// Returns the proper character slice
+    /// 
+    /// ## Arguments:
+    /// * page - the current page
+    /// * number_of_characters - the total number of characters
+    /// * display_per_page - the number of characters displayed on a page
+    fn unique_characters_slice(page: &u32, 
+                        characters: &Vec<CharacterModel>,
+                        display_per_page: &u32)
+        -> Vec<CharacterModel> {
+
+        let slice = BoxCommand::page_slice(
+            &page, &(characters.len() as u32), &display_per_page
+        );
+        
+        characters[slice[0]..slice[1]].to_vec()
+    }
+
 }
 
 #[async_trait]
 trait BoxCommandTrait {
 
-    /// Manages the player's box
+    /// Manages the player's box for characters
     /// 
     /// ## Arguments:
     /// * player - the player
     /// * context - the context
     /// * characters - the player's characters
     /// * interaction - the command's interaction
-    async fn manage_box(player: &PlayerModel, 
-                        context: &Context,
-                        characters: &Vec<(CharacterModel, i64)>,
-                        interaction: &ApplicationCommandInteraction)
-        -> Result<(), Error>;
+    async fn manage_box_characters(player: &PlayerModel, 
+                                   context: &Context,
+                                   characters: &Vec<(CharacterModel, i64)>,
+                                   interaction: &ApplicationCommandInteraction)
+        -> Result<(), Error> {
+        
+        // number of characters to display per box page
+        let display_per_page = 5;
+
+        BoxCommand::display_page_characters(
+            &context, &interaction, &player, &0, &characters, &display_per_page
+        ).await?;
+
+        Ok(())
+    }
+
+    /// Manages the player's box for unique characters
+    /// 
+    /// ## Arguments:
+    /// * player - the player
+    /// * context - the context,
+    /// * characters - the player's unique characters
+    /// *interaction - the command's interaction
+    async fn manage_box_unique_characters(player: &PlayerModel,
+                                          context: &Context,
+                                          characters: &Vec<CharacterModel>,
+                                          interaction: &ApplicationCommandInteraction)
+        -> Result<(), Error> {
+        
+        let display_per_page = 10;
+
+        BoxCommand::display_page_unique_characters(
+            &context, &interaction, &player, 
+            &0, &characters, &display_per_page
+        ).await?;
+
+        Ok(())
+    }
 
     /// Displays the box page
     /// 
@@ -113,60 +186,12 @@ trait BoxCommandTrait {
     /// * page - the page to display
     /// * characters - the characters to display
     /// * display_per_page - the number of characters to display per page
-    async fn display_page(context: &Context,
-                          interaction: &ApplicationCommandInteraction,
-                          player: &PlayerModel,
-                          page: &u32, 
-                          characters: &Vec<(CharacterModel, i64)>,
-                          display_per_page: &u32)
-        -> Result<(), Error>;
-
-    /// Allows the player to change the box page
-    /// 
-    /// ## Argupments:
-    /// * context - the context
-    /// * interaction - the interaction that triggered the box
-    /// * player - the player to await
-    /// * page - the starting page
-    /// * number_of_characters - the total number of characters
-    /// * display_per_page - the number of characters to display per page
-    /// * characters - the characters to display
-    async fn page_switching(context: &Context,
-                            interaction: &ApplicationCommandInteraction,
-                            player: &PlayerModel,
-                            page: &u32,
-                            number_of_characters: &u32,
-                            display_per_page: &u32,
-                            characters: &Vec<(CharacterModel, i64)>)
-        -> Result<(), Error>;
-
-}
-
-#[async_trait]
-impl BoxCommandTrait for BoxCommand {
-
-    async fn manage_box(player: &PlayerModel,
-                        context: &Context, 
-                        characters: &Vec<(CharacterModel, i64)>,
-                        interaction: &ApplicationCommandInteraction)
-        -> Result<(), Error> {
-
-        // number of characters to display per box page
-        let display_per_page = 5;
-
-        BoxCommand::display_page(
-            &context, &interaction, &player, &0, &characters, &display_per_page
-        ).await?;
-        
-        Ok(())
-    }
-
-    async fn display_page(context: &Context, 
-                          interaction: &ApplicationCommandInteraction, 
-                          player: &PlayerModel,
-                          page: &u32, 
-                          characters: &Vec<(CharacterModel, i64)>, 
-                          display_per_page: &u32)
+    async fn display_page_characters(context: &Context,
+                                     interaction: &ApplicationCommandInteraction,
+                                     player: &PlayerModel,
+                                     page: &u32, 
+                                     characters: &Vec<(CharacterModel, i64)>,
+                                     display_per_page: &u32)
         -> Result<(), Error> {
 
         if characters.len() == 0 {
@@ -201,7 +226,7 @@ impl BoxCommandTrait for BoxCommand {
             return Err(Error::BoxCommand(format!("{} while displaying player's box content", error)))
         }
 
-        BoxCommand::page_switching(
+        BoxCommand::page_switching_characters(
             &context, &interaction, &player, 
             &page, &(characters.len() as u32), &display_per_page, &characters
         ).await?;
@@ -209,27 +234,171 @@ impl BoxCommandTrait for BoxCommand {
         Ok(())
     }
 
-    async fn page_switching(context: &Context,
-                            interaction: &ApplicationCommandInteraction,
-                            player: &PlayerModel,
-                            page: &u32,
-                            number_of_characters: &u32,
-                            display_per_page: &u32,
-                            characters: &Vec<(CharacterModel, i64)>)
+    /// Displays the box page for unique characters
+    /// 
+    /// ## Arguments:
+    /// * context - the context
+    /// * interaction - the command interaction
+    /// * page - the page to display
+    /// * characters - the characters to display
+    /// * display_per_page - the number of characters to display per page
+    async fn display_page_unique_characters(context: &Context,
+                                            interaction: &ApplicationCommandInteraction,
+                                            player: &PlayerModel,
+                                            page: &u32,
+                                            characters: &Vec<CharacterModel>,
+                                            display_per_page: &u32)
         -> Result<(), Error> {
 
-        let page = page.clone();
+        BoxCommand::check_player_has_enough_unique_characters(&characters)?;
+
+        // find the characters to display
+        let characters_slice = BoxCommand::unique_characters_slice(
+            &page, &characters, &display_per_page
+        );
+
+        let mut embed = Utils::default_embed(&context.cache);
+        embed.thumbnail(interaction.user.face());
+        embed.title(format!("{}'s box", interaction.user.name));
+
+        if let Err(error) = interaction.edit_original_interaction_response(
+            &context.http, 
+            |message| {
+                let mut description = String::new();
+                for character in &characters_slice {
+                    description.push_str(
+                        format!("{}\n", character.short_display()).as_str()
+                    )
+                }
+
+                embed.description(description);
+                message.content("");
+                message.set_embed(embed)
+            }
+        ).await {
+
+            return Err(Error::BoxCommand(format!("{error} while displaying player's unique characters box")))
+        }
+
+        BoxCommand::page_switching_unique_characters(
+            &context, &interaction, &player,
+            &page, &(characters.len() as u32), &display_per_page,
+            &characters
+        ).await?;
+
+        Ok(())
+    }
+
+    /// Allows the player to change the box page
+    /// 
+    /// ## Argupments:
+    /// * context - the context
+    /// * interaction - the interaction that triggered the box
+    /// * player - the player to await
+    /// * page - the starting page
+    /// * number_of_characters - the total number of characters
+    /// * display_per_page - the number of characters to display per page
+    /// * characters - the characters to display
+    async fn page_switching_characters(context: &Context,
+                                        interaction: &ApplicationCommandInteraction,
+                                        player: &PlayerModel,
+                                        page: &u32,
+                                        number_of_characters: &u32,
+                                        display_per_page: &u32,
+                                        characters: &Vec<(CharacterModel, i64)>)
+        -> Result<(), Error> {
+
+        let mut page = page.clone();
         let total_pages = BoxCommand::total_number_of_pages(
             &number_of_characters, &display_per_page
         );
 
+        BoxCommand::create_and_add_buttons_to_interaction(
+            &context, &interaction, &page, &total_pages
+        ).await?;
+
+        BoxCommand::wait_for_user_to_click_box_button(
+            &context, &interaction, &mut page, &total_pages
+        ).await?;
+
+        BoxCommand::display_page_characters(
+            &context, &interaction, &player, &page, &characters, &display_per_page
+        ).await?;
+
+        Ok(())
+    }
+
+    /// Allows the player to change the characters unique box page
+    /// 
+    /// ## Argument:
+    /// * context - the context
+    /// * interaction - the command's interaction
+    /// * player - the player to await
+    /// * page - the starting page
+    /// * number_of_characters - the total number of characters
+    /// * display_per_page - the number of characters to display per page
+    /// * characters - the characters to display
+    async fn page_switching_unique_characters(context: &Context,
+                                              interaction: &ApplicationCommandInteraction,
+                                              player: &PlayerModel,
+                                              page: &u32,
+                                              number_of_characters: &u32,
+                                              display_per_page: &u32,
+                                              characters: &Vec<CharacterModel>)
+        -> Result<(), Error> {
+
+        // change page mutability
+        let mut page = page.clone();
+        let total_pages = BoxCommand::total_number_of_pages(
+            &number_of_characters, &display_per_page
+        );
+
+        BoxCommand::create_and_add_buttons_to_interaction(
+            &context, &interaction, &page, &total_pages
+        ).await?;
+        
+        BoxCommand::wait_for_user_to_click_box_button(
+            &context, &interaction, &mut page, &total_pages
+        ).await?;
+
+        BoxCommand::display_page_unique_characters(
+            &context, &interaction, &player, &page, &characters, &display_per_page
+        ).await?;
+
+        Ok(())
+    }
+
+    /// Adds buttons to the interaction message
+    /// 
+    /// ## Arguments:
+    /// * context - the context
+    /// * interaction - the interaction
+    /// * page - the current page
+    /// * total_pages - the total number of pages
+    async fn create_and_add_buttons_to_interaction(context: &Context,
+                                                   interaction: &ApplicationCommandInteraction,
+                                                   page: &u32,
+                                                   total_pages: &u32)
+        -> Result<(), Error> {
+
+        let page = page.clone();
+
         // set buttons
+        // close button
+        let mut close_button = CreateButton::default();
+        close_button
+            .style(ButtonStyle::Danger)
+            .custom_id("box_close_button")
+            .emoji(Icons::CLOSE.emoji_id())
+            .label("");
+
         // go to first page button
         let mut first_page_button = CreateButton::default();
         first_page_button
             .style(ButtonStyle::Primary)
             .custom_id("box_first_page_button")
-            .label("<<");
+            .emoji(Icons::ArrowLeftEnd.emoji_id())
+            .label("");
 
         if page == 0 {
             first_page_button.disabled(true);
@@ -240,7 +409,8 @@ impl BoxCommandTrait for BoxCommand {
         previous_page_button
             .style(ButtonStyle::Primary)
             .custom_id("box_prev_page_button")
-            .label("<");
+            .emoji(Icons::ArrowLeft.emoji_id())
+            .label("");
 
         if page == 0 {
             previous_page_button.disabled(true);
@@ -259,7 +429,8 @@ impl BoxCommandTrait for BoxCommand {
         next_page_button
             .style(ButtonStyle::Primary)
             .custom_id("box_next_page_button")
-            .label(">");
+            .emoji(Icons::ArrowRight.emoji_id())
+            .label("");
         
         if page == total_pages-1 {
             next_page_button.disabled(true);
@@ -270,7 +441,8 @@ impl BoxCommandTrait for BoxCommand {
         last_page_button
             .style(ButtonStyle::Primary)
             .custom_id("box_last_page_button")
-            .label(">>");
+            .emoji(Icons::ArrowRightEnd.emoji_id())
+            .label("");
 
         if page == total_pages-1 {
             last_page_button.disabled(true);
@@ -289,6 +461,11 @@ impl BoxCommandTrait for BoxCommand {
                                 .add_button(middle_button)
                                 .add_button(next_page_button)
                                 .add_button(last_page_button)
+                        );
+
+                        components.create_action_row(
+                            |second_ar| second_ar
+                                .add_button(close_button)
                         )
                     }
                 )
@@ -298,7 +475,17 @@ impl BoxCommandTrait for BoxCommand {
             return Err(Error::BoxCommand(format!("{} while adding components to the box message", error)))
         }
 
-        // wait for the user to click a button
+        Ok(())
+    }
+
+    /// Waits for the user to click a box button
+    async fn wait_for_user_to_click_box_button(context: &Context,
+                                               interaction: &ApplicationCommandInteraction,
+                                               page: &mut u32,
+                                               total_pages: &u32)
+        -> Result<(), Error> {
+        
+        // get the response message to await interaction on it
         let box_message = match interaction.get_interaction_response(&context.http).await {
             Ok(box_message) => box_message,
             Err(error) => return Err(Error::BoxCommand(format!("{error} while waiting for player's interaction"))),
@@ -308,37 +495,50 @@ impl BoxCommandTrait for BoxCommand {
             .await_component_interaction(&context.shard)
             .author_id(interaction.user.id)
             .message_id(box_message.id)
-            .timeout(std::time::Duration::from_secs(60))
+            .timeout(std::time::Duration::from_secs(60 * 2))
             .await;
         
+        // if timeout
+        // disable all buttons
         if let None = component_interaction {
             if let Err(error) = box_message.delete(&context.http).await {
                 return Err(Error::BoxCommand(format!("{error} while trying to delete box message after time out")))
             }
+
+            return Ok(())
         }
 
         let button_clicked = component_interaction.unwrap();
+        
+        // remove the error message on interaction
         if let Err(_) = button_clicked
             .create_interaction_response(&context.http, |response| response)
             .await {}
 
-        let next_page_to_display = match button_clicked.data.custom_id.as_str() {
-            "box_first_page_button" => 0,
-            "box_prev_page_button" => page-1,
-            "box_next_page_button" => page+1,
-            "box_last_page_button" => total_pages-1,
-            &_ => page,
+        // change the next page to display
+        let mut delete_message = false;
+        match button_clicked.data.custom_id.as_str() {
+            "box_first_page_button" => *page = 0,
+            "box_prev_page_button" => *page -= 1,
+            "box_next_page_button" => *page += 1,
+            "box_last_page_button" => *page = total_pages-1,
+            "box_close_button" => delete_message = true,
+            &_ => *page = 0,
         };
 
-        BoxCommand::display_page(
-            &context, &interaction, &player, 
-            &next_page_to_display, &characters, &display_per_page
-        ).await?;
+        if delete_message {
+            if let Err(error) = box_message.delete(&context.http).await {
+                return Err(Error::BoxCommand(format!("{error} while trying to delete box message use asked to")))
+            }
+        }
 
         Ok(())
     }
 
 }
+
+#[async_trait]
+impl BoxCommandTrait for BoxCommand {}
 
 #[async_trait]
 impl Command for BoxCommand {
@@ -355,21 +555,104 @@ impl Command for BoxCommand {
         "Allows you to see which characters you own".to_string()
     }
 
+    fn options(&self) -> Option<Vec<CreateApplicationCommandOption>> {
+        
+        // add character option
+        let mut box_type_option = CreateApplicationCommandOption::default();
+        box_type_option
+            .kind(CommandOptionType::String)
+            .name("type")
+            .description("Allows you to choose what kind of data you want to display, by default, displays your characters")
+            .add_string_choice("character", "character")
+            .required(true);
+        
+        let mut box_filter_option = CreateApplicationCommandOption::default();
+        box_filter_option
+            .kind(CommandOptionType::String)
+            .name("filter")
+            .description("Allows you to filter out the data displayed, by default, it is set to \"all\"")
+            .add_string_choice("all", "all")
+            .add_string_choice("unique", "unique");
+        
+        let mut box_identifier_option = CreateApplicationCommandOption::default();
+        box_identifier_option
+            .kind(CommandOptionType::Integer)
+            .name("identifier")
+            .description("The data identifier, ignored if the filter is set to \"all\", required otherwise");
+            
+        Some(vec![box_type_option, box_filter_option, box_identifier_option])
+    }
+
     async fn run(&self, 
                  context: &Context, 
                  interaction: &ApplicationCommandInteraction, 
                  database: &tokio_postgres::Client)
         -> Result<(), Error> {
 
-        let player = Utils::convert_user_id_to_player_model(&interaction.user.id)?;
+        let options = match self.options_map(&interaction) {
+            Some(options) => options,
+            None => return Err(Error::BoxCommand("No parameter specified, please at least pass the box type".to_string()))
+        };
 
-        // get player's characters
-        let unique_character_repository = UniqueCharacterRepository::new(&database);
-        let characters = unique_character_repository
-            .get_player_unique_characters_and_count(&player)
-            .await?;
+        if options.contains_key("type") {
+            let player = Utils::convert_user_id_to_player_model(&interaction.user.id)?;
+            let unique_character_repository = UniqueCharacterRepository::new(&database);
 
-        BoxCommand::manage_box(&player, &context, &characters, &interaction).await?;
+            // get the type of the box
+            if let Some(box_type) = &options["type"].value {
+                if box_type == "character" {
+
+                    if options.contains_key("filter") {
+                        if let Some(box_filter) = &options["filter"].value {
+                            // display unique character box
+                            if box_filter == "unique" {
+                                // check if the unique id had been passed
+                                if options.contains_key("identifier") {
+                                    // the identifier had been passed
+                                    if let Some(box_id) = &options["identifier"].value {
+                                        // get the identifier value
+                                        let id = match box_id.as_i64().clone() {
+                                            Some(id) => id,
+                                            None => return Err(
+                                                Error::BoxCommand(
+                                                    "Unable to parse the identifier".to_string()
+                                                )
+                                            )
+                                        };
+
+                                        let characters = unique_character_repository
+                                            .get_player_unique_characters_with_id(&player, &id)
+                                            .await?;
+                                        
+                                        BoxCommand::manage_box_unique_characters(
+                                            &player, &context, &characters, &interaction
+                                        ).await?;
+                                    }
+
+                                } else {
+                                    return Err(
+                                        Error::BoxCommand(
+                                            "The identifier is required for unique characters".to_string()
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // display character box
+                    let characters = unique_character_repository
+                        .get_player_unique_characters_and_count(&player)
+                        .await?;
+                    BoxCommand::manage_box_characters(
+                        &player, &context, &characters, &interaction
+                    ).await?;
+                }
+            }
+
+        } else {
+            return Err(Error::BoxCommand("The box type parameter is required".to_string()))
+        }
 
         Ok(())
     }

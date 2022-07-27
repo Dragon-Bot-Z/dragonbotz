@@ -1,4 +1,8 @@
 
+// lib
+    // serenity
+use serenity::model::id::EmojiId;
+
 // crate
 use crate::utils::rarity::Rarity;
 
@@ -9,6 +13,13 @@ pub enum Icons {
 
     // items
     BaseSummonTicket,
+
+    // buttons
+    CLOSE,
+    ArrowLeftEnd,
+    ArrowLeft,
+    ArrowRight,
+    ArrowRightEnd,
 
     // rarity
     COMMON,
@@ -55,6 +66,34 @@ impl Icons {
             Rarity::ULTRA => Icons::ULTRA,
             Rarity::KAMI => Icons::KAMI,
             _ => Icons::UNKNOWN,
+        }
+    }
+
+    pub fn emoji_id(&self) -> EmojiId {
+        match &self {
+            // others
+            Icons::UNKNOWN => EmojiId(998265915437240390),
+
+            // items
+            Icons::BaseSummonTicket => EmojiId(999418886988505088),
+
+            // buttons
+            Icons::CLOSE => EmojiId(1001875591215206531),
+            Icons::ArrowLeftEnd => EmojiId(1001908289602334842),
+            Icons::ArrowLeft => EmojiId(1001908287236755516),
+            Icons::ArrowRight => EmojiId(1001908291271675955),
+            Icons::ArrowRightEnd => EmojiId(1001908292928417802),
+
+            // rarity
+            Icons::COMMON => EmojiId(996897790334599198),
+            Icons::UNCOMMON => EmojiId(996897775348351057),
+            Icons::SUPER => EmojiId(996897783225270323),
+            Icons::EXTREME => EmojiId(996897788543631370),
+            Icons::ULTRA => EmojiId(996897780314419291),
+            Icons::KAMI => EmojiId(996897785532141618),
+            Icons::ORIGINS => EmojiId(998240766700814376),
+
+            _ => EmojiId(998265915437240390)
         }
     }
 }

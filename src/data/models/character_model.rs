@@ -19,6 +19,7 @@ pub struct CharacterModel {
     image: String,
     thumbnail: String,
     is_origins: bool,
+    unique_id: Option<i64>,
 }
 
 impl CharacterModel {
@@ -31,12 +32,15 @@ impl CharacterModel {
     /// * rarity - the character's rarity
     /// * image - the character's image
     /// * thumbnail - the character's thumbnail
+    /// * is_origins - tell if the character is origins
+    /// * unique_id - [Optional] the character's unique id
     pub fn new(id: i32, 
                name: String, 
                rarity: i16, 
                image: String, 
                thumbnail: String,
-               is_origins: bool)
+               is_origins: bool,
+               unique_id: Option<i64>)
         -> Self {
 
         Self {
@@ -46,6 +50,7 @@ impl CharacterModel {
             image,
             thumbnail,
             is_origins,
+            unique_id,
         }        
     }
 
@@ -56,7 +61,13 @@ impl CharacterModel {
 
     /// Returns the formatted id
     pub fn id_formatted(&self) -> String {
-        format!("`#{}`", self.id()).to_string()
+        let mut id = *self.id() as i64;
+        
+        if let Some(unique_id) = *self.unique_id() {
+            id = unique_id;
+        }
+        
+        format!("`#{}`", id).to_string()
     }
 
     /// Returns the character name
@@ -91,6 +102,11 @@ impl CharacterModel {
     /// Tells if the character is Origins
     pub fn is_origins(&self) -> &bool {
         &self.is_origins
+    }
+
+    /// Returns the characters unique id
+    pub fn unique_id(&self) -> &Option<i64> {
+        &self.unique_id
     }
 
     /// Returns the summon-like display card of the character

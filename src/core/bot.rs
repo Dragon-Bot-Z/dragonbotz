@@ -133,6 +133,12 @@ impl BotTrait for Bot {
                             new_command
                                 .name(name)
                                 .description(command.description());
+
+                            if command.has_options() {
+                                if let Some(options) = command.options() {
+                                    new_command.set_options(options);
+                                }
+                            }
                             
                             new_command
 
