@@ -60,9 +60,9 @@ impl Command for SummonCommand {
             .get_player_resource_with_discord_id(player.discord_id())
             .await?;
 
-        if *player_resource_model.summon_ticket_base() < Cost::SUMMON_BASIC.value() {
+        if *player_resource_model.summon_ticket_base() < Cost::SummonBase.value() {
             return Err(Error::NotEnoughResources(
-                format!("You do not have enough {} to proceed", Items::SummonTicketBase))
+                format!("You do not have enough {} to proceed", Items::BaseSummonTicket))
             )
         }
         
@@ -78,7 +78,7 @@ impl Command for SummonCommand {
             .await?;
 
         player_resource_repository
-            .remove_summon_ticket_basic_to(&player, Cost::SUMMON_BASIC.value())
+            .remove_base_summon_ticket_to(&player, Cost::SummonBase.value())
             .await?;
 
         let result = command.edit_original_interaction_response(

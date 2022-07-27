@@ -58,7 +58,7 @@ impl Command for InventoryCommand {
         embed.description(
             format!(
                 "{}: *x{}*", 
-                Items::SummonTicketBase,
+                Items::BaseSummonTicket,
                 player_resources.summon_ticket_base()
             )
         );

@@ -6,6 +6,7 @@ use serenity::cache::Cache;
 
 // crate
 use crate::utils::utils::Utils;
+use crate::utils::unique_id::UniqueId;
 use crate::utils::icons::Icons;
 use crate::utils::rarity::Rarity;
 use crate::utils::colors::Colors;
@@ -19,6 +20,7 @@ pub struct CharacterModel {
     image: String,
     thumbnail: String,
     is_origins: bool,
+    unique_id: Option<i64>,
 }
 
 impl CharacterModel {
@@ -31,12 +33,15 @@ impl CharacterModel {
     /// * rarity - the character's rarity
     /// * image - the character's image
     /// * thumbnail - the character's thumbnail
+    /// * is_origins - tell if the character is origins
+    /// * unique_id - [Optional] the character's unique id
     pub fn new(id: i32, 
                name: String, 
                rarity: i16, 
                image: String, 
                thumbnail: String,
-               is_origins: bool)
+               is_origins: bool,
+               unique_id: Option<i64>)
         -> Self {
 
         Self {
@@ -46,6 +51,7 @@ impl CharacterModel {
             image,
             thumbnail,
             is_origins,
+            unique_id,
         }        
     }
 
@@ -56,7 +62,12 @@ impl CharacterModel {
 
     /// Returns the formatted id
     pub fn id_formatted(&self) -> String {
-        format!("`#{}`", self.id()).to_string()
+        if let Some(unique_id_formatted) = self.unique_id_formatted() {
+            return format!("`#{unique_id_formatted}`").to_string()
+        }
+        
+        let id = *self.id() as i64;
+        format!("`#{}`", id).to_string()
     }
 
     /// Returns the character name
@@ -93,6 +104,20 @@ impl CharacterModel {
         &self.is_origins
     }
 
+    /// Returns the characters unique id
+    pub fn unique_id(&self) -> &Option<i64> {
+        &self.unique_id
+    }
+
+    /// Returns the formatted unique id
+    pub fn unique_id_formatted(&self) -> Option<String> {
+        if let Some(unique_id) = self.unique_id {
+            return Some(UniqueId::encode(&unique_id))
+        }
+
+        None
+    }
+
     /// Returns the summon-like display card of the character
     /// 
     /// ## Arguments:
@@ -120,8 +145,8 @@ impl CharacterModel {
             format!(
                 "Name: {} - {}
 Rarity: {}",
-                self.name_formatted(),
                 self.id_formatted(),
+                self.name_formatted(),
                 rarity
             )
         );
@@ -131,6 +156,20 @@ Rarity: {}",
         embed.color(Colors::from_rarity(&self.rarity_converted()));
 
         embed
+    }
+
+    /// Returns the short display of the character
+    pub fn short_display(&self) -> String {
+        let mut rarity = format!("{}", Icons::from_rarity(&self.rarity_converted()));
+        if *self.is_origins() {
+            rarity = format!(
+                "{}{}", 
+                Icons::from_rarity(&self.rarity_converted()),
+                Icons::ORIGINS
+            );
+        }
+
+        format!("{} - {}{}", self.id_formatted(), self.name_formatted(), rarity)
     }
 
 }

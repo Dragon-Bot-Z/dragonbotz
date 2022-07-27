@@ -55,7 +55,6 @@ impl Bot {
         }
 
     }
-    
 }
 
 
@@ -76,6 +75,41 @@ trait BotTrait {
                                            context: &Context,
                                            command: &ApplicationCommandInteraction)
         -> Result<(), ()>;
+
+    
+    /// Tells if a user exists before processing the command
+    /// 
+    /// ## Arguments:
+    /// * context - the context
+    /// * command - the interaction command passed by the user
+    /// * discord_id - the user's discord id
+    async fn check_user_exists(self: &Self, 
+                               context: &Context,
+                               command: &ApplicationCommandInteraction,
+                               discord_id: &i64)
+        -> bool;
+
+    /// Tells if the user doesn't exist before processing the command
+    /// 
+    /// ## Arguments:
+    /// * context - the context
+    /// * command - the interaction command passed by the user
+    /// * discord_id - the user's discord id
+    async fn check_user_doesnt_exist(self: &Self,
+                                     context: &Context,
+                                     command: &ApplicationCommandInteraction,
+                                     discord_id: &i64)
+        -> bool;
+
+    /// Sends an error message as reply to the interaction
+    /// 
+    /// ## Argument:
+    /// * command - the interaction command
+    /// * message - the message to send
+    async fn send_error_message(self: &Self, 
+                                context: &Context,
+                                command: &ApplicationCommandInteraction,
+                                message: String);
 
 }
 
@@ -99,6 +133,12 @@ impl BotTrait for Bot {
                             new_command
                                 .name(name)
                                 .description(command.description());
+
+                            if command.has_options() {
+                                if let Some(options) = command.options() {
+                                    new_command.set_options(options);
+                                }
+                            }
                             
                             new_command
 
@@ -115,6 +155,66 @@ impl BotTrait for Bot {
         }
     }
 
+    async fn send_error_message(&self, 
+                                context: &Context,
+                                command: &ApplicationCommandInteraction, 
+                                message: String) {
+        
+        if let Err(error) = command.edit_original_interaction_response(
+            &context.http, 
+            |message_edit| message_edit.content(format!("❌ {}", message))
+        ).await {
+            println!("{}", error);
+        }
+    }
+
+    async fn check_user_exists(&self,
+                               context: &Context,
+                               command: &ApplicationCommandInteraction, 
+                               discord_id: &i64) 
+        -> bool {
+
+        let exists = Check::user_exists(&self.database, discord_id).await;
+        if let Err(_) = exists {
+            return false;
+        }
+        let exists = exists.unwrap();
+
+        if !exists {
+            self.send_error_message(
+                &context, 
+                &command, 
+                "Please use `/start` before using this command".to_string()
+            ).await;
+        }
+
+        exists
+    }
+
+    async fn check_user_doesnt_exist(&self, 
+                                     context: &Context, 
+                                     command: &ApplicationCommandInteraction, 
+                                     discord_id: &i64)
+        -> bool {
+
+        let doesnt_exist = Check::user_exists(&self.database, &discord_id).await;
+        if let Err(_) = doesnt_exist {
+            return false;
+        }
+        let doesnt_exist = !doesnt_exist.unwrap();
+
+        // if the user exists
+        if !doesnt_exist {
+            self.send_error_message(
+                &context, 
+                &command, 
+                "You must not be registered in our database to use this command".to_string()    
+            ).await;
+        }
+
+        doesnt_exist
+    }
+
     async fn execute_slash_command(&self, 
                                    context: &Context,
                                    command: &ApplicationCommandInteraction) {
@@ -127,30 +227,7 @@ impl BotTrait for Bot {
         if let Err(_) = player {
             return;
         }
-
         let player = player.unwrap();
-
-        // check if the player exists in the database
-        let exists = Check::user_exists(&self.database, &player.discord_id()).await;
-        if let Err(_) = exists {
-            return;
-        }
-
-        let exists = exists.unwrap();
-        if !exists {
-            if let Err(error) = command.create_interaction_response(
-                &context.http, 
-                |response| {
-                    response.interaction_response_data(
-                        |message| message.content("❌ You must be registered in our database to use this command, type `/start` to continue")
-                    )
-                }
-            ).await {
-                println!("{}", error);
-            }
-
-            return;
-        }
 
         // tells that the command had been received
         if let Err(error) = command.create_interaction_response(
@@ -166,6 +243,21 @@ impl BotTrait for Bot {
         let mut failed = false;
         let mut failed_error = String::new();
         let command_to_run = &self.commands[&command.data.name];
+
+        // process checks before executing the command
+        if command_to_run.player_needs_to_exist() {
+            if !self.check_user_exists(&context, &command, &player.discord_id()).await {
+                return;
+            }
+        }
+
+        if command_to_run.player_has_to_not_exist() {
+            if !self.check_user_doesnt_exist(&context, &command, &player.discord_id()).await {
+                return;
+            }
+        }
+
+        // run the command
         if let Err(error) = command_to_run.run(&context, &command, &self.database).await {
             failed = true;
             failed_error = error.to_string();

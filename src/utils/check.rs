@@ -41,7 +41,7 @@ impl CheckTrait for Check {
 
         if let Err(error) = result {
             return Err(
-                Error::DatabaseQueryError(format!("{}", error))
+                Error::DatabaseQueryError(format!("{} while checking if the user exists", error))
             )
         }
 

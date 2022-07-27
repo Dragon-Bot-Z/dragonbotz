@@ -44,5 +44,5 @@ CREATE TABLE IF NOT EXISTS unique_character(
 
 CREATE TABLE IF NOT EXISTS player_resource(
     owner BIGINT REFERENCES player,
-    summon_ticket_base BIGINT DEFAULT 0 CHECK (summon_ticket_base >= 0)
+    base_summon_ticket BIGINT DEFAULT 0 CHECK (base_summon_ticket >= 0)
 );

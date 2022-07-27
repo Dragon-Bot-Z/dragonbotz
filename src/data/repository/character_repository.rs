@@ -42,6 +42,10 @@ pub trait CharacterRepositoryTrait {
     /// Returns a vector containing all characters stored in the database
     async fn get_all_characters(self: &Self) -> Result<Vec<CharacterModel>, Error>;
 
+    /// Returns the total number of available characters
+    async fn get_total_number_of_characters(self: &Self)
+        -> Result<i64, Error>;
+
 }
 
 #[async_trait]
@@ -65,7 +69,7 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
             ).await;
 
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)));
+            return Err(Error::DatabaseQueryError(format!("{} while fetching a the character", error)));
         }
 
         let row = result.unwrap();
@@ -73,7 +77,8 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
         Ok(
             CharacterModel::new(
                 row.get(0), row.get(1), row.get(2), 
-                row.get(3), row.get(4), row.get(5)
+                row.get(3), row.get(4), row.get(5),
+                None
             )
         )
     }
@@ -94,7 +99,7 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
             ).await;
 
         if let Err(error) = result {
-            return Err(Error::DatabaseQueryError(format!("{}", error)));
+            return Err(Error::DatabaseQueryError(format!("{} while fetching all characters", error)));
         }
 
         let rows = result.unwrap();
@@ -103,13 +108,32 @@ impl CharacterRepositoryTrait for CharacterRepository<'_> {
         for row in rows {
             let character = CharacterModel::new(
                 row.get(0), row.get(1), row.get(2), 
-                row.get(3), row.get(4), row.get(5)
+                row.get(3), row.get(4), row.get(5),
+                None
             );
 
             characters.push(character);
         }
 
         Ok(characters)
+    }
+
+    async fn get_total_number_of_characters(&self) -> Result<i64, Error> {
+
+        let result = self.database
+            .query_one(
+                "SELECT COUNT(id)
+                FROM character", 
+                &[]
+            ).await;
+        
+        if let Err(error) = result {
+            return Err(Error::DatabaseQueryError(format!("{error} while fetching the total number of characters")))
+        }
+
+        let count = result.unwrap();
+
+        Ok(count.get("count"))
     }
 
 }

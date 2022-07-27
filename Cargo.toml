@@ -9,7 +9,7 @@ authors = ["Lahcène Belhadi <lahcene.belhadi@gmail.com>"]
 [dependencies.serenity]
 version = "0.11"
 default-features = false
-features = ["client", "gateway", "rustls_backend", "model", "cache"]
+features = ["client", "http", "gateway", "rustls_backend", "model", "cache", "collector"]
 
 [dependencies.tokio]
 version = "1.19"
