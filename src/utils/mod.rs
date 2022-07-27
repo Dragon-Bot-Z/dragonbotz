@@ -9,4 +9,5 @@ pub mod items;
 pub mod droprate;
 pub mod rarity;
 pub mod reward;
+pub mod unique_id;
 pub mod utils;

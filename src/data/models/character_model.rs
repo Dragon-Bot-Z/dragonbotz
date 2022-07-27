@@ -6,6 +6,7 @@ use serenity::cache::Cache;
 
 // crate
 use crate::utils::utils::Utils;
+use crate::utils::unique_id::UniqueId;
 use crate::utils::icons::Icons;
 use crate::utils::rarity::Rarity;
 use crate::utils::colors::Colors;
@@ -61,12 +62,11 @@ impl CharacterModel {
 
     /// Returns the formatted id
     pub fn id_formatted(&self) -> String {
-        let mut id = *self.id() as i64;
-        
-        if let Some(unique_id) = *self.unique_id() {
-            id = unique_id;
+        if let Some(unique_id_formatted) = self.unique_id_formatted() {
+            return format!("`#{unique_id_formatted}`").to_string()
         }
         
+        let id = *self.id() as i64;
         format!("`#{}`", id).to_string()
     }
 
@@ -107,6 +107,15 @@ impl CharacterModel {
     /// Returns the characters unique id
     pub fn unique_id(&self) -> &Option<i64> {
         &self.unique_id
+    }
+
+    /// Returns the formatted unique id
+    pub fn unique_id_formatted(&self) -> Option<String> {
+        if let Some(unique_id) = self.unique_id {
+            return Some(UniqueId::encode(&unique_id))
+        }
+
+        None
     }
 
     /// Returns the summon-like display card of the character
